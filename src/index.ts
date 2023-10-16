@@ -1,8 +1,5 @@
 import { Command } from "commander";
-import {
-  ValidationCmd,
-  ValidationCmdOptions,
-} from "./processors/ValidationCmd";
+import { ProjectCmd, ProjectCmdOptions } from "./processors/ProjectCmd";
 
 const program = new Command();
 program
@@ -11,16 +8,14 @@ program
   .version("0.0.1");
 
 program
-  .command("validate")
-  .description(
-    "Validate the training data set to ensure that it meets the data contracts. Provide a report on invalid data, token sizes, etc."
-  )
+  .command("init")
+  .description("Initialize a new fine-tuning project")
   .option(
-    "--file <file>",
-    "Path to the JSON file. It must meet the data model { dataset: Array<{...> }"
+    "--name <name>",
+    "This will be initialized under the folder `projects/<name>`"
   )
-  .action(async (opt: ValidationCmdOptions) => {
-    const cmd = new ValidationCmd(opt);
+  .action(async (opt: ProjectCmdOptions) => {
+    const cmd = new ProjectCmd(opt);
     await cmd.process();
   });
 

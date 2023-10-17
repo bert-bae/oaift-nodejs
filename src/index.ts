@@ -23,7 +23,7 @@ program
 program
   .command("init")
   .description("Initialize a new fine-tuning project")
-  .option(
+  .requiredOption(
     "--name <name>",
     "This will be initialized under the folder `projects/<name>`"
   )
@@ -37,7 +37,7 @@ program
   .description(
     "Generate training data using ChatGPT4 model for a project given a configuration file"
   )
-  .option(
+  .requiredOption(
     "--project <project>",
     "The name of the project. This project must exist under `./projects/{name}/ with an `oaift.config.json` file."
   )
@@ -49,6 +49,21 @@ program
     await validateProjectExists(opt.project);
     const cmd = new GenerateCmd(opt, oai);
     await cmd.process();
+  });
+
+program
+  .command("fine-tune")
+  .description("Fine tune your model with a training data set.")
+  .requiredOption(
+    "--project",
+    "The name of the project. This project must exist under `./projects/{name}/ with an `oaift.config.json` file."
+  )
+  .requiredOption(
+    "--dataset",
+    "Path to the training dataset file relative to the project folder. If the project path is './projects/example', the value for dataset can simply be the name of the training dataset folder like 'test-1697567929095'"
+  )
+  .action(async (opt) => {
+    await validateProjectExists(opt.project);
   });
 
 program.parse();

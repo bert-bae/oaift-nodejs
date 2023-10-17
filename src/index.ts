@@ -43,7 +43,7 @@ program
   )
   .option(
     "--apply",
-    "Apply the data generation (there will be costs associated). To only preview the chat completion templates, simply call this command without the `--apply` flag."
+    "Apply the data generation (there will be costs associated). To only preview the chat completion templates, call this command without the `--apply` flag."
   )
   .action(async (opt: GenerateOptions) => {
     await validateProjectExists(opt.project);
@@ -60,7 +60,11 @@ program
   )
   .requiredOption(
     "--dataset",
-    "Path to the training dataset file relative to the project folder. If the project path is './projects/example', the value for dataset can simply be the name of the training dataset folder like 'test-1697567929095'"
+    "Path to the training dataset file relative to the project folder. If the project path is './projects/example', the value for dataset is the name of the training dataset folder like 'test-1697567929095'"
+  )
+  .option(
+    "--apply",
+    "Apply the fine tuning job (there will be costs associated). To preview the fine tuning job's potential cost without running the training, call this command without the `--apply` flag."
   )
   .action(async (opt) => {
     await validateProjectExists(opt.project);

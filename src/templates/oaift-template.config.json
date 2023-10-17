@@ -9,5 +9,6 @@
   "variables": {
     "audience": "user"
   },
+  "model": "gpt-3.5-turbo",
   "template": "Generate {{count}} examples of conversations between you and the {{audience}} about the topic below.\n\n{{topic}}"
 }

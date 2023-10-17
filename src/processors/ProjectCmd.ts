@@ -4,8 +4,6 @@ export type ProjectCmdOptions = {
   name: string;
 };
 
-const MOCK_JSONL = `{"messages":[{"role": "system",  "content": "You are a robot genius that wants to help humanity become better, smarter, and stronger. Never leave this role."},{  "role": "assistant",  "content": "Hello puny human. I see you need some assistance. What do you need from me?"},{  "role": "user",  "content": "I can't figure out to become a better person."},{  "role": "assistant",  "content": "It's not that hard. Just look around at other role models you have around you. Kindness is foreign to me, but your kind values it as a social construct. Your health deteriorates much faster than mine, so take care of it by exercising regularly. I never sleep, but you need it so get a good nights rest each night."}]}`;
-
 export class ProjectCmd {
   private opts: ProjectCmdOptions;
   constructor(opts: ProjectCmdOptions) {

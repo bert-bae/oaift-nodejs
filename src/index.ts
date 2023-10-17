@@ -4,6 +4,7 @@ import { ProjectCmd, ProjectCmdOptions } from "./processors/ProjectCmd";
 import { GenerateCmd, GenerateOptions } from "./processors/GenerateCmd";
 import fs from "fs/promises";
 import { FineTuneCmd } from "./processors/FineTuneCmd";
+import { JobsCmd } from "./processors/JobsCmd";
 
 const validateProjectExists = async (project: string) => {
   try {
@@ -72,5 +73,34 @@ program
     const cmd = new FineTuneCmd(opt, oai);
     await cmd.process();
   });
+
+program
+  .command("jobs")
+  .addCommand(
+    program
+      .command("list")
+      .description("Lists all current fine tuning jobs")
+      .action(async (opts) => {
+        const cmd = new JobsCmd(oai);
+        await cmd.list();
+      })
+  )
+  .addCommand(
+    program
+      .command("events")
+      .description("Lists all events associated to a fine tuning job ID")
+      .requiredOption("--id <id>")
+      .action(async (opts) => {
+        const cmd = new JobsCmd(oai);
+        await cmd.events(opts);
+      })
+  );
+// .description("Track the fine tuning job statuses and events.")
+// .option("--job-id <id>", "ID of the fine tuning job.")
+// .action(async (opt) => {
+//   await validateProjectExists(opt.project);
+//   const cmd = new FineTuneCmd(opt, oai);
+//   await cmd.process();
+// });
 
 program.parse();

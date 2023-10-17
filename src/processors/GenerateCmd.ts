@@ -4,11 +4,11 @@ import OpenAI from "openai";
 import { OaiConfig, OaiConfigSchema } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
+import { DEFAULT_MODEL } from "../constants/openai";
 
 export type GenerateOptions = {
   project: string;
   apply?: boolean;
-  model?: ChatCompletionCreateParams["model"];
 };
 
 export class GenerateCmd {
@@ -31,7 +31,7 @@ export class GenerateCmd {
       );
       console.info(
         `Previewing data generation using model ${
-          this.opts.model || "gpt-3.5-turbo"
+          config.model || "gpt-3.5-turbo"
         } with the following templates:\n\n${JSON.stringify(
           chatConfigs,
           null,
@@ -144,7 +144,7 @@ export class GenerateCmd {
         topic: t,
       });
       return {
-        model: this.opts.model || "gpt-3.5-turbo",
+        model: config.model || DEFAULT_MODEL,
         stream: false,
         messages: [
           { role: "system", content: config.system },

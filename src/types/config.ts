@@ -1,3 +1,4 @@
+import { ChatCompletionCreateParams } from "openai/resources";
 import { z } from "zod";
 
 export type OaiConfig = {
@@ -6,6 +7,7 @@ export type OaiConfig = {
   variables: Record<string, string | number>;
   count: number;
   template: string;
+  model: ChatCompletionCreateParams["model"];
 };
 
 export const OaiConfigSchema = z.object({
@@ -14,4 +16,5 @@ export const OaiConfigSchema = z.object({
   variables: z.record(z.string(), z.string()),
   count: z.number(),
   template: z.string(),
+  model: z.string(),
 });

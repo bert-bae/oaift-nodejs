@@ -1,9 +1,3 @@
-import OpenAI from "openai";
-import { ChatCompletionMessage } from "openai/resources";
-const openai = new OpenAI();
-
-// Example dummy function hard coded to return the same weather
-// In production, this could be your backend API or an external API
 type ConvertToTrainingDataExpectedMessage = {
   role: "user" | "assistant";
   content: string;

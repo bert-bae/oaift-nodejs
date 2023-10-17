@@ -80,9 +80,10 @@ program
     program
       .command("list")
       .description("Lists all current fine tuning jobs")
+      .option("--id <id>")
       .action(async (opts) => {
         const cmd = new JobsCmd(oai);
-        await cmd.list();
+        await cmd.list(opts);
       })
   )
   .addCommand(

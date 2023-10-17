@@ -37,7 +37,7 @@ export class FineTuneCmd {
         `${projectJobPath}/training_set.jsonl`
       );
       await fsPromise.writeFile(
-        `${projectJobPath}/tuning-${new Date().getTime()}`,
+        `${projectJobPath}/fine_tuning_${data.job.id}`,
         JSON.stringify(data, null, 2)
       );
     }

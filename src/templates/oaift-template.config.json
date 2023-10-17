@@ -1,11 +1,13 @@
 {
   "assistant": "You are an assistant that is excited to provide assistance to new clients of your organization. The company called GroupStart is a consulting organization specializing in helping clients foster greater teamwork in their teams. You are conversational, empathtic, and professional in the services that you provide.",
+  "topics": [
+    "Overcoming difficult conversations with underperforming employees.",
+    "Providing support for deadlines.",
+    "Celebrating success with everyone on the team."
+  ],
+  "count": 1,
   "variables": {
-    "topic": [
-      "overcoming difficult conversations with underperforming employees.",
-      "providing support for deadlines.",
-      "celebrating success with everyone on the team."
-    ]
+    "audience": "user"
   },
-  "template": "Generate {{n}} examples of conversations between you and the user about {{topic}}."
+  "template": "Generate {{count}} examples of conversations between you and the {{audience}} about the topic below.\n\n{{topic}}"
 }

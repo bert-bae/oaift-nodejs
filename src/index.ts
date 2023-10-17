@@ -1,10 +1,7 @@
 import { Command } from "commander";
 import { oai } from "./openaiClient";
 import { ProjectCmd, ProjectCmdOptions } from "./processors/ProjectCmd";
-import {
-  TestDataGenerationCmd,
-  TestDataGenerationOptions,
-} from "./processors/TestDataGenerationCmd";
+import { GenerateCmd, GenerateOptions } from "./processors/GenerateCmd";
 
 const program = new Command();
 program
@@ -33,8 +30,12 @@ program
     "--project <project>",
     "The name of the project. This project must exist under `./projects/{name}/ with an `oaift.config.json` file."
   )
-  .action(async (opt: TestDataGenerationOptions) => {
-    const cmd = new TestDataGenerationCmd(opt, oai);
+  .option(
+    "--apply",
+    "Apply the data generation (there will be costs associated). To only preview the chat completion templates, simply call this command without the `--apply` flag."
+  )
+  .action(async (opt: GenerateOptions) => {
+    const cmd = new GenerateCmd(opt, oai);
     await cmd.process();
   });
 

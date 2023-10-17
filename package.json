@@ -15,9 +15,12 @@
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.7",
     "commander": "^11.1.0",
-    "openai": "^4.12.2"
+    "lodash": "^4.17.21",
+    "openai": "^4.12.2",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.199",
     "@types/node": "^20.8.6",
     "typescript": "^5.2.2"
   }

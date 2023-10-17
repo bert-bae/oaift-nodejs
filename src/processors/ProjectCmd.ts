@@ -37,13 +37,6 @@ export class ProjectCmd {
       );
     }
 
-    await fs.mkdir(`${projectPath}/data`);
-    await fs.copyFile(
-      "./src/templates/training-data.jsonl",
-      `${projectPath}/data/training-data.jsonl`
-    );
-    await fs.mkdir(`${projectPath}/reports`);
-    await fs.mkdir(`${projectPath}/summary`);
     await fs.copyFile(
       "./src/templates/oaift-template.config.json",
       `${projectPath}/oaift.config.json`

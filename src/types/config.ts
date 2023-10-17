@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export type OaiConfig = {
-  assistant: string;
+  system: string;
   topics: string[];
   variables: Record<string, string | number>;
   count: number;
@@ -9,7 +9,7 @@ export type OaiConfig = {
 };
 
 export const OaiConfigSchema = z.object({
-  assistant: z.string(),
+  system: z.string(),
   topics: z.array(z.string()),
   variables: z.record(z.string(), z.string()),
   count: z.number(),

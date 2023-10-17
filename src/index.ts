@@ -2,6 +2,17 @@ import { Command } from "commander";
 import { oai } from "./openaiClient";
 import { ProjectCmd, ProjectCmdOptions } from "./processors/ProjectCmd";
 import { GenerateCmd, GenerateOptions } from "./processors/GenerateCmd";
+import fs from "fs/promises";
+
+const validateProjectExists = async (project: string) => {
+  try {
+    await fs.readdir(`./projects/${project}`);
+  } catch {
+    throw new Error(
+      `Project ${project} does not exist or does not have the necessary folders. Run the initialization command with "init --name <name>.`
+    );
+  }
+};
 
 const program = new Command();
 program
@@ -35,6 +46,7 @@ program
     "Apply the data generation (there will be costs associated). To only preview the chat completion templates, simply call this command without the `--apply` flag."
   )
   .action(async (opt: GenerateOptions) => {
+    await validateProjectExists(opt.project);
     const cmd = new GenerateCmd(opt, oai);
     await cmd.process();
   });

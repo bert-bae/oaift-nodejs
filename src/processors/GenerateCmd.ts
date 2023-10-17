@@ -2,11 +2,8 @@ import fs from "fs/promises";
 import { chunk } from "lodash";
 import OpenAI from "openai";
 import { OaiConfig, OaiConfigSchema } from "../types/config";
-import {
-  ChatCompletion,
-  ChatCompletionCreateParams,
-  ChatCompletionMessageParam,
-} from "openai/resources";
+import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
+import oaiFn from "../oaiFunctions";
 
 export type GenerateOptions = {
   project: string;
@@ -46,100 +43,67 @@ export class GenerateCmd {
     }
 
     console.info("Applying generation tasks.");
-    const requestId = `${this.opts.project}-${new Date().getTime()}`;
-    const completions: ChatCompletion[] = [
-      {
-        id: "chatcmpl-8AgfUtQNrxLf77VsVz6syXqJXiXaR",
-        object: "chat.completion",
-        created: 1697557988,
-        model: "gpt-3.5-turbo-0613",
-        choices: [
-          {
-            index: 0,
-            message: {
-              role: "assistant",
-              content:
-                "User: Hello, I need some advice on how to handle difficult conversations with underperforming employees. Can you help?\n\nAssistant: Of course! I'd be happy to assist you with that. Difficult conversations can be challenging, but with the right approach, you can effectively address performance issues. What specific situation are you facing with your underperforming employee?\n\nUser: Well, one of my team members consistently fails to meet deadlines and produces work that doesn't meet our standards. I need to have a conversation with them about their performance, but I'm not sure how to approach it without causing conflict.\n\nAssistant: I understand your concern. It's important to approach the conversation with empathy and a focus on finding a solution. One approach you can consider is to start the conversation by expressing your expectations and the impact their performance has on the team's goals. Make sure to provide specific instances where their underperformance was observed.\n\nUser: That's a good point. I don't want them to feel attacked, but I do want them to understand the consequences of their actions. How can I ensure the conversation remains productive and doesn't become confrontational?\n\nAssistant: Excellent question! It's crucial to maintain a calm and respectful tone throughout the conversation. Instead of placing blame, try to understand their perspective first. Ask open-ended questions to encourage their input and actively listen to their responses. This will demonstrate that you value their opinion and are genuinely interested in finding a solution together.\n\nUser: That's valuable advice. I'll make sure to create a safe space for open communication. Is there anything specific I should do to prepare for this conversation?\n\nAssistant: Absolutely! Preparation is key to ensuring a successful conversation. Take some time to outline the key points you want to address during the conversation. Write down specific examples of their underperformance as evidence for your concerns. Additionally, anticipate potential reactions or questions they may have, so you can respond effectively.\n\nUser: Thank you for the valuable guidance. I feel more confident now in approaching this difficult conversation with my underperforming employee.\n\nAssistant: You're welcome! I'm glad I could help. Remember, difficult conversations can be uncomfortable, but they also present an opportunity for growth and improvement. I'm confident that by approaching the conversation with empathy and clear expectations, you'll be able to guide your employee towards better performance. If you need any further assistance or have more questions, feel free to ask. Good luck!",
-            },
-            finish_reason: "stop",
-          },
-        ],
-        usage: {
-          prompt_tokens: 93,
-          completion_tokens: 489,
-          total_tokens: 582,
-        },
-      },
-      {
-        id: "chatcmpl-8AgfUjxyfX6dwEQfy9otMSMMaXZnz",
-        object: "chat.completion",
-        created: 1697557988,
-        model: "gpt-3.5-turbo-0613",
-        choices: [
-          {
-            index: 0,
-            message: {
-              role: "assistant",
-              content:
-                "User: Hi, I need some support with meeting a deadline. Can you help?\n\nAssistant: Of course! I'm here to assist you. Please let me know more about the deadline and the challenges you're facing.\n\nUser: We have a project due in two weeks, and I'm feeling overwhelmed with the workload. I can't seem to prioritize tasks effectively, and it's causing me stress.\n\nAssistant: I understand how overwhelming deadlines can be. Don't worry, we can work through this together. Let's start by breaking down the tasks involved in the project. Can you provide me with a list of everything that needs to be done?\n\nUser: Sure, here's a list of tasks: researching, drafting the report, creating a presentation, and reviewing it with team members.\n\nAssistant: Great! Now let's prioritize these tasks. Which ones are the most critical and need to be completed first?\n\nUser: I think researching and drafting the report are the most time-sensitive tasks. The presentation and review can be done closer to the deadline.\n\nAssistant: That sounds like a good plan. Now, let's allocate specific time slots for each task. Have you considered blocking off dedicated time in your schedule for focused work on the research and report drafting?\n\nUser: I haven't thought about that, but it makes sense. I'll find some time every day to focus solely on those tasks.\n\nAssistant: Excellent. By allocating dedicated time for focused work, you'll make progress on the most critical tasks and alleviate some of the stress. Additionally, don't hesitate to communicate with your team members and delegate smaller tasks if possible. Teamwork can help lighten the workload.\n\nUser: That's a good point. I'll reach out to my team and see if anyone can assist with smaller tasks. Thank you for your guidance!\n\nAssistant: You're welcome! Remember, we're here to support you. If you need further assistance or have any more questions, feel free to reach out. Good luck in meeting your deadline, and I'm confident you'll do great!",
-            },
-            finish_reason: "stop",
-          },
-        ],
-        usage: {
-          prompt_tokens: 89,
-          completion_tokens: 411,
-          total_tokens: 500,
-        },
-      },
-      {
-        id: "chatcmpl-8AgfUBgeStbCFrFXYmHPoU5Phl8DE",
-        object: "chat.completion",
-        created: 1697557988,
-        model: "gpt-3.5-turbo-0613",
-        choices: [
-          {
-            index: 0,
-            message: {
-              role: "assistant",
-              content:
-                "User: Hi there! I heard that GroupStart is all about fostering teamwork. I'm looking for ideas on how to celebrate success with my team. Any suggestions?\n\nAssistant: Hi! Absolutely, I'd be happy to help. Celebrating success with everyone on the team is a great way to boost morale and motivation. One idea is to organize a team-wide recognition event. You could plan an informal gathering, like a team lunch or happy hour, where you can publicly acknowledge and appreciate everyone's achievements. Additionally, you could create a \"Wall of Fame\" in your office or a virtual platform, where you showcase the successes and milestones of team members. This not only celebrates the accomplishments but also encourages friendly competition and inspires others to strive for success. Would you like any more ideas or specific tips for your team?",
-            },
-            finish_reason: "stop",
-          },
-        ],
-        usage: {
-          prompt_tokens: 92,
-          completion_tokens: 163,
-          total_tokens: 255,
-        },
-      },
-    ];
+    const completions: ChatCompletion[] = [];
     const batches = chunk(chatConfigs, this.batchSize);
-    let counter = this.batchSize;
+    let counter = 1;
     for (const batch of batches) {
       console.info(
-        `Processing data generation ${counter} / ${
-          batches.length * this.batchSize
-        }`
+        `Processing data generation batch ${counter} / ${batches.length}`
       );
       const output = await Promise.all(
-        batch.map((config) => this.oai.chat.completions.create(config))
+        batch.map((config) => this.completeChat(config))
       );
       completions.push(...output);
-      counter += this.batchSize;
+      counter += 1;
     }
-    await this.generateReportFile(requestId, completions);
-    await this.generateDataFile(requestId, completions);
+
+    const requestId = `${this.opts.project}-${new Date().getTime()}`;
+    const reportPath = `./projects/${this.opts.project}/${requestId}`;
+    await fs.mkdir(reportPath);
+    await this.generateReportFile(reportPath, completions);
+    await this.generateDataFile(reportPath, config, completions);
+  }
+
+  private async completeChat(
+    messageConfig: ChatCompletionCreateParams
+  ): Promise<ChatCompletion> {
+    const response = (await this.oai.chat.completions.create({
+      ...messageConfig,
+      function_call: "auto",
+      functions: oaiFn.definitions,
+      stream: false,
+    })) as ChatCompletion;
+    return response;
   }
 
   private async generateDataFile(
     reportName: string,
+    config: OaiConfig,
     completions: ChatCompletion[]
   ) {
-    await fs.writeFile(
-      `./projects/${this.opts.project}/data/${reportName}.json`,
-      JSON.stringify(completions, null, 2)
+    let modified: string = "";
+    completions.forEach((c) => {
+      const message = c.choices[0].message;
+      if (message.function_call) {
+        const fnName = message.function_call.name;
+        const fnCall = oaiFn.functions[fnName];
+        const fnArgs = JSON.parse(message.function_call.arguments);
+        const fnRes = fnCall(fnArgs) as any[];
+        fnRes.unshift({ message: config.system, role: "system" });
+        modified +=
+          JSON.stringify({
+            messages: fnRes,
+          }) + "\n";
+      } else {
+        console.warn(
+          'Ignoring generated data response due to missng of function_call "convertToTrainingData" from OpenAI completion'
+        );
+      }
+    });
+
+    await fs.writeFile(`${reportName}/training_set.jsonl`, modified);
+    console.info(
+      `Training data set written to ${reportName}/training_set.jsonl`
     );
   }
 
@@ -164,9 +128,13 @@ export class GenerateCmd {
       }
     });
 
-    const reportPath = `./projects/${this.opts.project}/reports/${reportName}.json`;
-    await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-    console.info(`Data generation usage report created to "${reportPath}"`);
+    await fs.writeFile(
+      `${reportName}/token_report.json`,
+      JSON.stringify(report, null, 2)
+    );
+    console.info(
+      `Data generation usage report written to ${reportName}/token_report.json`
+    );
   }
 
   private generateChatConfigs(config: OaiConfig) {
@@ -178,11 +146,12 @@ export class GenerateCmd {
       });
       return {
         model: this.opts.model || "gpt-3.5-turbo",
+        stream: false,
         messages: [
-          { role: "assistant", content: config.assistant },
+          { role: "system", content: config.system },
           { role: "user", content: withVariables },
-        ] as ChatCompletionMessageParam[],
-      };
+        ],
+      } as ChatCompletionCreateParams;
     });
   }
 

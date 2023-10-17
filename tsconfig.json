@@ -1,15 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2018",
-    "module": "commonjs",
-    "jsx": "preserve",
-    "strict": true,
-    "esModuleInterop": true,
-    "lib": ["es2018", "esnext.asynciterable"],
+    "rootDir": "src",
     "outDir": "lib",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "noImplicitAny": false,
-    "resolveJsonModule": true
+    "strict": true,
+    "target": "ES2018",
+    "module": "commonjs",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "noImplicitAny": false
   }
 }

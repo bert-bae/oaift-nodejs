@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command } from "commander";
 import { oai } from "./openaiClient";
 import { ProjectCmd, ProjectCmdOptions } from "./processors/ProjectCmd";
@@ -75,33 +76,21 @@ program
   });
 
 program
-  .command("jobs")
-  .addCommand(
-    program
-      .command("list")
-      .description("Lists all current fine tuning jobs")
-      .option("--id <id>")
-      .action(async (opts) => {
-        const cmd = new JobsCmd(oai);
-        await cmd.list(opts);
-      })
-  )
-  .addCommand(
-    program
-      .command("events")
-      .description("Lists all events associated to a fine tuning job ID")
-      .requiredOption("--id <id>")
-      .action(async (opts) => {
-        const cmd = new JobsCmd(oai);
-        await cmd.events(opts);
-      })
-  );
-// .description("Track the fine tuning job statuses and events.")
-// .option("--job-id <id>", "ID of the fine tuning job.")
-// .action(async (opt) => {
-//   await validateProjectExists(opt.project);
-//   const cmd = new FineTuneCmd(opt, oai);
-//   await cmd.process();
-// });
+  .command("list")
+  .description("Lists all current fine tuning jobs")
+  .option("--id <id>")
+  .action(async (opts) => {
+    const cmd = new JobsCmd(oai);
+    await cmd.list(opts);
+  });
+
+program
+  .command("events")
+  .description("Lists all events associated to a fine tuning job ID")
+  .requiredOption("--id <id>")
+  .action(async (opts) => {
+    const cmd = new JobsCmd(oai);
+    await cmd.events(opts);
+  });
 
 program.parse();

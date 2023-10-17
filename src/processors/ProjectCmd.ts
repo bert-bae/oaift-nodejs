@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import configTemplate from "../templates/oaift-template.config.json";
 
 export type ProjectCmdOptions = {
   name: string;
@@ -35,9 +36,9 @@ export class ProjectCmd {
       );
     }
 
-    await fs.copyFile(
-      "./src/templates/oaift-template.config.json",
-      `${projectPath}/oaift.config.json`
+    await fs.writeFile(
+      `${projectPath}/oaift.config.json`,
+      JSON.stringify(configTemplate, null, 2)
     );
   }
 }

@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 import fsPromise from "fs/promises";
 import OpenAI from "openai";
 import { OaiConfig } from "../types/config";
@@ -28,6 +29,8 @@ export class FineTuneCmd {
     const data = await this.previewJobReport(
       `${projectJobPath}/training_set.jsonl`
     );
+    console.info("-----Preview-----");
+    console.log(data);
     await fsPromise.writeFile(`${projectJobPath}/fine_tune_preview.txt`, data);
     if (this.opts.apply) {
       const data = await this.createFineTuneJob(
@@ -66,7 +69,10 @@ export class FineTuneCmd {
   // TODO: Enhance with capturing the data as an object to auto-detect whether training can proceed or not.
   private async previewJobReport(datasetPath: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const python = spawn("python3", ["./scripts/validate.py", datasetPath]);
+      const python = spawn("python3", [
+        path.resolve(__dirname, "../scripts/validate.py"),
+        datasetPath,
+      ]);
 
       python.stdout.on("data", function (data) {
         console.info("Initializing python script to preview training...");
@@ -74,6 +80,7 @@ export class FineTuneCmd {
       });
 
       python.on("error", (err) => {
+        console.log("Err: ", err);
         reject(err);
       });
     });

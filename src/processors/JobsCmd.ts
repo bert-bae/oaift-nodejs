@@ -1,9 +1,4 @@
-import fs from "fs";
-import fsPromise from "fs/promises";
 import OpenAI from "openai";
-import { ChatCompletionCreateParams } from "openai/resources";
-import { spawn } from "child_process";
-import { DEFAULT_MODEL } from "../constants/openai";
 
 export type JobListOptions = {
   id: string;

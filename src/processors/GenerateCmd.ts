@@ -61,7 +61,7 @@ export class GenerateCmd {
     await fs.mkdir(reportPath);
     await fs.writeFile(
       `${reportPath}/chat_completions.json`,
-      JSON.stringify(batches, null, 2)
+      JSON.stringify(completions, null, 2)
     );
     await this.generateReportFile(reportPath, completions);
     await this.generateDataFile(reportPath, config, completions);
@@ -74,6 +74,7 @@ export class GenerateCmd {
       ...messageConfig,
       function_call: "auto",
       functions: oaiFn.definitions,
+      temperature: 0,
       stream: false,
     })) as ChatCompletion;
     return response;

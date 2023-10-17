@@ -4,7 +4,92 @@ This CLI contains minimal logic to support developers and OpenAI users generate 
 
 ## Setup
 
-Save your `OPENAI_API_KEY` environment variable on your host machine. This tool does not save or store your secret keys.
+1. Save your `OPENAI_API_KEY` environment variable on your host machine. This tool does not save or store your secret keys.
+2. Install python3 alongside NodeJS
+3. Clone repository and after installing dependencies, run `npm i -g .`
+4. Run `oaift` to verify installation.
+
+This package has not been published as it is a work in process. It is also easier to clone and modify the code here for your own use cases.
+
+## OAIFT Config
+
+```ts
+export type OaiConfig = {
+  system: string;
+  topics: string[];
+  variables: Record<string, string | number>;
+  count: number;
+  template: string;
+  model: ChatCompletionCreateParams["model"];
+};
+```
+
+#### Properties
+
+`template`: This is the testing data chat completion prompt template. This string should provide prompt instructions on what the chat completion should try to generate for us that is relevant to our fine tuning. Interpolation is supported and the following are required.
+
+- Property `topics` is required. Interpolation field is `{{topic}}`.
+- Property `count` is required. Interpolation field is `{{count}}`.
+- Any other matching fields `{{STRING}}` can also be supported by using values supplied to the `variables` object which can only receive key value pairs of `string | number`.
+
+`system`: This is the message that defines the behaviour of OpenAI's chat models. It will be the initial set of instructions to supply in order to provide training data that can further reinforce how your fine tuned model should behave.
+
+- Example: Your name is Bert. You are very knowledgeable about software development. You try to help others as best as you can with a calm demeanor. Oftentimes, you try to explain things in a way that will help them learn without giving away the answer.
+
+`topics`: This is the array of strings that will be interpolated to the `template` string. The template string should contain the text `{{topic}}` which each item in this array will replace to help generate different variations of our testing data.
+
+`count`: This is a number to supply to our testing data generation prompt to provide instructions on how many variations of examples we should create. Different variations will provide better training for models as long as it meets the following rules:
+
+- Similar prompts with same responses.
+- Same prompts with slightly varying responses, but same core message.
+- It CANNOT have similar prompts with completely different responses. This will confuse the model during fine tuning.
+
+`model`: By default, the model is `gpt-3.5-turbo`. However, you can change this to whatever you want as long as it is listed in the OpenAI models.
+
+#### Function Calls
+
+There is one built-in function call called `convertToTrainingData` with the following schema:
+
+```ts
+{
+  name: "convertToTrainingData",
+  description:
+    "Convert the conversation to an array of messages alternating between the user and assistant.",
+  parameters: {
+    type: "object",
+    properties: {
+      conversation: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            role: {
+              type: "string",
+              enum: ["user", "assistant"],
+              description:
+                "The name of the role that's currently responding.",
+            },
+            content: {
+              type: "string",
+              description: "The message content",
+            },
+          },
+          required: ["role", "content"],
+        },
+      },
+    },
+    required: ["conversation"],
+  },
+}
+```
+
+This is used to help standardize the response data from the testing data generation prompts. If this function call is not in the chat completions, `training_set.jsonl` will not automatically be generated. To increase the likelihood of function calls being returned from chat completions, include it in the `template` property of the `oaift.config.json`.,
+
+Example template to get function calls:
+
+```
+Generate {{count}} examples of conversations between you and the {{audience}} about the topic below. The resulting conversation between the assistant and user should call convertToTrainingData({ conversation: { role: 'user' | 'assistant', content: string }[] }).\n\n{{topic}}
+```
 
 ## Usage
 
@@ -69,7 +154,7 @@ Fine-Tune uses the generated `training_set.jsonl` to upload the training file an
 
 By default, `--apply` will be false. This will output the preliminary information about your training data before it goes through fine tuning. If `--apply` is applied, then the API call to OpenAI will occur and costs will be applied to your OpenAI account.
 
-- This report is generated TODO
+- This report is generated to `fine_tuning_${job.id}.json`. It will contain the job ID that can be used with the `list` and `events` commands.
 
 ```sh
 Fine tune your model with a training data set.
@@ -79,4 +164,24 @@ Options:
   --dataset <dataset>  Path to the training dataset file relative to the project folder. If the project path is './projects/example', the value for dataset is the name of the training dataset folder like 'test-1697567929095'
   --apply              Apply the fine tuning job (there will be costs associated). To preview the fine tuning job's potential cost without running the training, call this command without the `--apply` flag.
   -h, --help           display help for command
+```
+
+#### List
+
+```sh
+Lists all current fine tuning jobs
+
+Options:
+  --id <id>
+  -h, --help  display help for command
+```
+
+#### Events
+
+```sh
+Lists all events associated to a fine tuning job ID
+
+Options:
+  --id <id>
+  -h, --help  display help for command
 ```

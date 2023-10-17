@@ -59,6 +59,10 @@ export class GenerateCmd {
     const requestId = `${this.opts.project}-${new Date().getTime()}`;
     const reportPath = `./projects/${this.opts.project}/${requestId}`;
     await fs.mkdir(reportPath);
+    await fs.writeFile(
+      `${reportPath}/chat_completions.json`,
+      JSON.stringify(batches, null, 2)
+    );
     await this.generateReportFile(reportPath, completions);
     await this.generateDataFile(reportPath, config, completions);
   }

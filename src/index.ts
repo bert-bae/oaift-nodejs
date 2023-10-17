@@ -3,6 +3,7 @@ import { oai } from "./openaiClient";
 import { ProjectCmd, ProjectCmdOptions } from "./processors/ProjectCmd";
 import { GenerateCmd, GenerateOptions } from "./processors/GenerateCmd";
 import fs from "fs/promises";
+import { FineTuneCmd } from "./processors/FineTuneCmd";
 
 const validateProjectExists = async (project: string) => {
   try {
@@ -55,11 +56,11 @@ program
   .command("fine-tune")
   .description("Fine tune your model with a training data set.")
   .requiredOption(
-    "--project",
+    "--project <project>",
     "The name of the project. This project must exist under `./projects/{name}/ with an `oaift.config.json` file."
   )
   .requiredOption(
-    "--dataset",
+    "--dataset <dataset>",
     "Path to the training dataset file relative to the project folder. If the project path is './projects/example', the value for dataset is the name of the training dataset folder like 'test-1697567929095'"
   )
   .option(
@@ -68,6 +69,8 @@ program
   )
   .action(async (opt) => {
     await validateProjectExists(opt.project);
+    const cmd = new FineTuneCmd(opt, oai);
+    await cmd.process();
   });
 
 program.parse();

@@ -3,12 +3,11 @@
 import json
 import tiktoken # for token counting
 import numpy as np
+import sys
 from collections import defaultdict
 
-data_path = "../.data/valid.jsonl"
-
 # Load the dataset
-with open(data_path, 'r', encoding='utf-8') as f:
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
     dataset = [json.loads(line) for line in f]
 
 # Initial dataset stats

@@ -7,7 +7,6 @@ import oaiFn from "../oaiFunctions";
 
 export type GenerateOptions = {
   project: string;
-  plan?: boolean;
   apply?: boolean;
   model?: ChatCompletionCreateParams["model"];
 };
@@ -89,7 +88,7 @@ export class GenerateCmd {
         const fnCall = oaiFn.functions[fnName];
         const fnArgs = JSON.parse(message.function_call.arguments);
         const fnRes = fnCall(fnArgs) as any[];
-        fnRes.unshift({ message: config.system, role: "system" });
+        fnRes.unshift({ role: "system", content: config.system });
         modified +=
           JSON.stringify({
             messages: fnRes,

@@ -8,6 +8,12 @@ import { DEFAULT_MODEL } from "../constants/openai";
 import { info, log } from "console";
 import { prettifyJson } from "../utils/log";
 import { BaseCmd, BaseCmdParams } from "./BaseCmd";
+import {
+  TRAINING_SET,
+  fineTuningNamespace,
+  fineTuningPreview,
+  fineTuningReport,
+} from "../constants/fileNames";
 
 export type FineTuneOptions = {
   project: string;
@@ -24,19 +30,21 @@ export class FineTuneCmd extends BaseCmd {
   }
 
   public async process() {
-    const projectJobPath = `./projects/${this.opts.project}/${this.opts.dataset}`;
-    const data = await this.previewJobReport(
-      `${projectJobPath}/training_set.jsonl`
-    );
+    const trainingSet = `${fineTuningNamespace(
+      this.opts.project,
+      this.opts.dataset
+    )}/${TRAINING_SET}`;
+    const data = await this.previewJobReport(trainingSet);
     info("-----Preview-----");
     info(data);
-    await fsPromise.writeFile(`${projectJobPath}/fine_tune_preview.txt`, data);
+    await fsPromise.writeFile(
+      fineTuningPreview(this.opts.project, this.opts.dataset),
+      data
+    );
     if (this.opts.apply) {
-      const data = await this.createFineTuneJob(
-        `${projectJobPath}/training_set.jsonl`
-      );
+      const data = await this.createFineTuneJob(trainingSet);
       await fsPromise.writeFile(
-        `${projectJobPath}/fine_tuning_${data.job.id}.json`,
+        fineTuningReport(this.opts.project, this.opts.dataset, data.job.id),
         prettifyJson(data)
       );
     }

@@ -1,12 +1,17 @@
 import fs from "fs/promises";
 import { chunk } from "lodash";
-import OpenAI from "openai";
-import { OaiConfig, OaiConfigSchema, getProjectConfig } from "../types/config";
+import { OaiConfig, OaiConfigSchema } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
 import { error, info, prettifyJson, warn } from "../utils/log";
 import { BaseCmd, BaseCmdParams } from "./BaseCmd";
+import {
+  CHAT_COMPLETIONS,
+  GENERATION_REPORT,
+  TRAINING_SET,
+  datasetName,
+} from "../constants/fileNames";
 
 export type GenerateOptions = {
   project: string;
@@ -59,11 +64,11 @@ export class GenerateCmd extends BaseCmd {
 
     const requestId =
       this.opts.name || `${this.opts.project}-${new Date().getTime()}`;
-    const reportPath = `./projects/${this.opts.project}/${requestId}`;
+    const reportPath = datasetName(this.opts.project, requestId);
     await fs.mkdir(reportPath, { recursive: true });
     await Promise.all([
       fs.writeFile(
-        `${reportPath}/chat_completions.json`,
+        `${reportPath}/${CHAT_COMPLETIONS}`,
         prettifyJson(completions)
       ),
       this.generateReport(reportPath, completions),
@@ -76,16 +81,12 @@ export class GenerateCmd extends BaseCmd {
       return true;
     }
 
-    if (!this.opts.force) {
-      return false;
-    }
-
     try {
-      await fs.readdir(`./projects/${this.opts.project}/${this.opts.name}`);
+      await fs.readdir(datasetName(this.opts.project, this.opts.name));
       info(`Dataset name ${this.opts.name} exists and will be overwritten.`);
-      return true;
+      return !!this.opts.force;
     } catch {
-      return false;
+      return true;
     }
   }
 
@@ -129,8 +130,8 @@ export class GenerateCmd extends BaseCmd {
       }
     });
 
-    await fs.writeFile(`${reportName}/training_set.jsonl`, modified);
-    info(`Training data set written to ${reportName}/training_set.jsonl`);
+    await fs.writeFile(`${reportName}/${TRAINING_SET}`, modified);
+    info(`Training data set written to ${reportName}/${TRAINING_SET}`);
   }
 
   private async generateReport(
@@ -155,14 +156,14 @@ export class GenerateCmd extends BaseCmd {
     });
 
     await fs.writeFile(
-      `${reportName}/generation_report.json`,
+      `${reportName}/${GENERATION_REPORT}`,
       prettifyJson({
         tokens: report,
         oaiConfig: this.config,
       })
     );
     info(
-      `Data generation usage report written to ${reportName}/generation_report.json`
+      `Data generation usage report written to ${reportName}/${GENERATION_REPORT}`
     );
   }
 

@@ -35,12 +35,11 @@ export class FineTuneCmd extends BaseCmd {
   public async process() {
     const datasets = this.opts.datasets.split(",");
     await this.prepareFolders();
+    const path = await this.consolidateDatasets(datasets);
+    console.log(path);
+    await this.previewJobReport(path);
 
-    for (const dataset of datasets) {
-      await this.previewJobReport(dataset);
-    }
     if (this.opts.apply) {
-      const path = await this.consolidateDatasets(datasets);
       const trainingFile = await this.uploadTrainingFile(path);
       const job = await this.createFineTuneJob(trainingFile.id);
       await fsPromise.writeFile(
@@ -58,9 +57,7 @@ export class FineTuneCmd extends BaseCmd {
     const path = fineTuningNamespace(this.opts.project, this.opts.name);
     const exists = fs.existsSync(path);
     if (exists) {
-      throw new Error(
-        `Fine tuning job namespace ${this.opts.name} already exists. If this is a mistake, delete the folder './projects/${this.opts.project}/fineTune/${this.opts.name}'`
-      );
+      return;
     }
 
     // Prepare folders for following process
@@ -108,11 +105,7 @@ export class FineTuneCmd extends BaseCmd {
 
   // Runs the python code for OpenAI cookbook to preview specs on the fine tuning job
   // TODO: Enhance with capturing the data as an object to auto-detect whether training can proceed or not.
-  private async previewJobReport(dataset: string): Promise<void> {
-    const datasetPath = `${datasetName(
-      this.opts.project,
-      dataset
-    )}/${TRAINING_SET}`;
+  private async previewJobReport(datasetPath: string): Promise<void> {
     const previewFilePath = fineTuningPreview(
       this.opts.project,
       this.opts.name

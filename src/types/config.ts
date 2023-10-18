@@ -26,7 +26,7 @@ export const OaiConfigSchema = z.object({
   model: z.string(),
   fineTuning: z.object({
     epochs: z.optional(z.number()),
-    suffix: z.optional(z.string()),
+    suffix: z.optional(z.string().min(4).max(18)),
   }),
 });
 

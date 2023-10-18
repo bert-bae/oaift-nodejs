@@ -1,13 +1,13 @@
 import fs from "fs";
 import path from "path";
 import fsPromise from "fs/promises";
-import OpenAI from "openai";
 import { getProjectConfig } from "../types/config";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { spawn } from "child_process";
 import { DEFAULT_MODEL } from "../constants/openai";
 import { info, log } from "console";
 import { prettifyJson } from "../utils/log";
+import { BaseCmd, BaseCmdParams } from "./BaseCmd";
 
 export type FineTuneOptions = {
   project: string;
@@ -16,12 +16,11 @@ export type FineTuneOptions = {
   model?: ChatCompletionCreateParams["model"];
 };
 
-export class FineTuneCmd {
+export class FineTuneCmd extends BaseCmd {
   private opts: FineTuneOptions;
-  private oai: OpenAI;
-  constructor(opts: FineTuneOptions, oai: OpenAI) {
+  constructor(opts: FineTuneOptions, base: BaseCmdParams) {
+    super(base.config, base.oai);
     this.opts = opts;
-    this.oai = oai;
   }
 
   public async process() {

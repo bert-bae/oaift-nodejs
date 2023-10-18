@@ -6,6 +6,7 @@ import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
 import { error, info, prettifyJson, warn } from "../utils/log";
+import { BaseCmd, BaseCmdParams } from "./BaseCmd";
 
 export type GenerateOptions = {
   project: string;
@@ -14,20 +15,18 @@ export type GenerateOptions = {
   apply?: boolean;
 };
 
-export class GenerateCmd {
+export class GenerateCmd extends BaseCmd {
   private batchSize: number;
   private opts: GenerateOptions;
-  private oai: OpenAI;
-  constructor(opts: GenerateOptions, oai: OpenAI) {
+  constructor(opts: GenerateOptions, base: BaseCmdParams) {
+    super(base.config, base.oai);
     this.batchSize = 3;
     this.opts = opts;
-    this.oai = oai;
     this.completeChat = this.completeChat.bind(this);
   }
 
   public async process() {
-    const json = await getProjectConfig(this.opts.project);
-    const config = OaiConfigSchema.parse(json);
+    const config = OaiConfigSchema.parse(this.config);
     const chatConfigs = this.generateChatConfigs(config);
     if (!this.opts.apply) {
       info(
@@ -67,7 +66,7 @@ export class GenerateCmd {
         `${reportPath}/chat_completions.json`,
         prettifyJson(completions)
       ),
-      this.generateReportFile(reportPath, completions),
+      this.generateReport(reportPath, completions),
       this.generateDataFile(reportPath, config, completions),
     ]);
   }
@@ -134,7 +133,7 @@ export class GenerateCmd {
     info(`Training data set written to ${reportName}/training_set.jsonl`);
   }
 
-  private async generateReportFile(
+  private async generateReport(
     reportName: string,
     completions: ChatCompletion[]
   ) {
@@ -155,9 +154,15 @@ export class GenerateCmd {
       }
     });
 
-    await fs.writeFile(`${reportName}/token_report.json`, prettifyJson(report));
+    await fs.writeFile(
+      `${reportName}/generation_report.json`,
+      prettifyJson({
+        tokens: report,
+        oaiConfig: this.config,
+      })
+    );
     info(
-      `Data generation usage report written to ${reportName}/token_report.json`
+      `Data generation usage report written to ${reportName}/generation_report.json`
     );
   }
 

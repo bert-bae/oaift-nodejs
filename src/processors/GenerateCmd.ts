@@ -5,6 +5,7 @@ import { OaiConfig, OaiConfigSchema, getProjectConfig } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
+import { info, prettifyJson, warn } from "../utils/log";
 
 export type GenerateOptions = {
   project: string;
@@ -28,29 +29,23 @@ export class GenerateCmd {
     const config = OaiConfigSchema.parse(json);
     const chatConfigs = this.generateChatConfigs(config);
     if (!this.opts.apply) {
-      console.info(
+      info(
         "Apply flag with --apply has not been set. To apply the data generation, use the `--apply` option."
       );
-      console.info(
+      info(
         `Previewing data generation using model ${
           config.model || "gpt-3.5-turbo"
-        } with the following templates:\n\n${JSON.stringify(
-          chatConfigs,
-          null,
-          2
-        )}`
+        } with the following templates:\n\n${prettifyJson(chatConfigs)}`
       );
       return;
     }
 
-    console.info("Applying generation tasks.");
+    info("Applying generation tasks.");
     const completions: ChatCompletion[] = [];
     const batches = chunk(chatConfigs, this.batchSize);
     let counter = 1;
     for (const batch of batches) {
-      console.info(
-        `Processing data generation batch ${counter} / ${batches.length}`
-      );
+      info(`Processing data generation batch ${counter} / ${batches.length}`);
       const output = await Promise.all(batch.map(this.completeChat));
       completions.push(...output);
       counter += 1;
@@ -62,7 +57,7 @@ export class GenerateCmd {
     await fs.mkdir(reportPath);
     await fs.writeFile(
       `${reportPath}/chat_completions.json`,
-      JSON.stringify(completions, null, 2)
+      prettifyJson(completions)
     );
     await this.generateReportFile(reportPath, completions);
     await this.generateDataFile(reportPath, config, completions);
@@ -78,7 +73,7 @@ export class GenerateCmd {
     messageConfig: ChatCompletionCreateParams,
     i: number
   ): Promise<ChatCompletion> {
-    console.info(`Generating chat completion #${i}...`);
+    info(`Generating chat completion #${i}...`);
     const response = (await this.oai.chat.completions.create({
       ...messageConfig,
       function_call: "auto",
@@ -104,20 +99,18 @@ export class GenerateCmd {
         const fnRes = fnCall(fnArgs) as any[];
         fnRes.unshift({ role: "system", content: config.system });
         modified +=
-          JSON.stringify({
+          prettifyJson({
             messages: fnRes,
           }) + "\n";
       } else {
-        console.warn(
+        warn(
           'Ignoring generated data response due to missng of function_call "convertToTrainingData" from OpenAI completion'
         );
       }
     });
 
     await fs.writeFile(`${reportName}/training_set.jsonl`, modified);
-    console.info(
-      `Training data set written to ${reportName}/training_set.jsonl`
-    );
+    info(`Training data set written to ${reportName}/training_set.jsonl`);
   }
 
   private async generateReportFile(
@@ -141,11 +134,8 @@ export class GenerateCmd {
       }
     });
 
-    await fs.writeFile(
-      `${reportName}/token_report.json`,
-      JSON.stringify(report, null, 2)
-    );
-    console.info(
+    await fs.writeFile(`${reportName}/token_report.json`, prettifyJson(report));
+    info(
       `Data generation usage report written to ${reportName}/token_report.json`
     );
   }

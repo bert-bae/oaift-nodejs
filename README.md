@@ -146,7 +146,12 @@ Generate training data using ChatGPT4 model for a project given a configuration 
 
 Options:
   --project <project>  The name of the project. This project must exist under `./projects/{name}/ with an `oaift.config.json` file.
-  --apply              Apply the data generation (there will be costs associated). To only preview the chat completion templates, call this command without the `--apply` flag.
+  --apply              Apply the data generation (there will be costs associated). To only preview the chat completion templates,
+                       call this command without the `--apply` flag.
+  --name <name>        Your own custom name for the dataset that will be generated. If this value is not passed in, the default
+                       value is {project}-{unixtime}
+  --force              Used in conjunction with the '--name' flag. If there is a dataset name conflict, it will cancel the process
+                       by default. Add this flag to force the generation which will overwrite existing files.
   -h, --help           display help for command
 ```
 

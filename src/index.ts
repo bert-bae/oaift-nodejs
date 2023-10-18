@@ -73,7 +73,11 @@ program
   )
   .requiredOption(
     "--name <name>",
-    "Dataset names to process. This field can be a comma delimited list. If the project path is './projects/example', the value for name is the name of the training name folder like 'test-1697567929095' and these folders must contain `training_set.jsonl` inside of them."
+    "Name of the fine tuning job. This cannot be overwritten so only one folder can exist for a given name. This will create a new folder with files related to the fine tuning job at './projects/fineTune/'"
+  )
+  .requiredOption(
+    "--datasets <datasets>",
+    "Dataset names to process. This field can be a comma delimited list. If the project path is './projects/datasets/example', the value for name is the name of the training name folder like 'test-1697567929095' and these folders must contain `training_set.jsonl` inside of them."
   )
   .option(
     "--apply",

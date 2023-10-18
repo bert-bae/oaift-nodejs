@@ -14,13 +14,19 @@ This package has not been published as it is a work in process. It is also easie
 ## OAIFT Config
 
 ```ts
-export type OaiConfig = {
+type FineTuningConfigs = {
+  epochs?: number;
+  suffix?: string;
+};
+
+type OaiConfig = {
   system: string;
   topics: string[];
   variables: Record<string, string | number>;
   count: number;
   template: string;
   model: ChatCompletionCreateParams["model"];
+  fineTuning: FineTuningConfigs;
 };
 ```
 
@@ -45,6 +51,11 @@ export type OaiConfig = {
 - It CANNOT have similar prompts with completely different responses. This will confuse the model during fine tuning.
 
 `model`: By default, the model is `gpt-3.5-turbo`. However, you can change this to whatever you want as long as it is listed in the OpenAI models.
+
+`fineTuning`: Contains parameters that will be passed into the fine tuning job creation.
+
+- `suffix`: By default, the fine tuning namespace will be used. However, if this is provided, then the model suffix will use this value instead.
+- `epoch`: The number of training iterations that will occur for OpenAI. By default this is 'auto'.
 
 #### Function Calls
 

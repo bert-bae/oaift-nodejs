@@ -2,6 +2,11 @@ import fs from "fs/promises";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { z } from "zod";
 
+type FineTuningConfigs = {
+  epochs?: number;
+  suffix?: string;
+};
+
 export type OaiConfig = {
   system: string;
   topics: string[];
@@ -9,6 +14,7 @@ export type OaiConfig = {
   count: number;
   template: string;
   model: ChatCompletionCreateParams["model"];
+  fineTuning: FineTuningConfigs;
 };
 
 export const OaiConfigSchema = z.object({
@@ -18,6 +24,10 @@ export const OaiConfigSchema = z.object({
   count: z.number(),
   template: z.string(),
   model: z.string(),
+  fineTuning: z.object({
+    epochs: z.optional(z.number()),
+    suffix: z.optional(z.string()),
+  }),
 });
 
 export const getProjectConfig = async (project: string): Promise<OaiConfig> => {

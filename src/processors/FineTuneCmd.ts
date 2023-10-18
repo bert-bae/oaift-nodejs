@@ -77,6 +77,10 @@ export class FineTuneCmd extends BaseCmd {
     const job = await this.oai.fineTuning.jobs.create({
       model: this.config.model || DEFAULT_MODEL,
       training_file: trainingFileId,
+      hyperparameters: {
+        n_epochs: this.config.fineTuning.epochs || "auto",
+      },
+      suffix: this.config.fineTuning.suffix || this.opts.name,
     });
 
     return job;

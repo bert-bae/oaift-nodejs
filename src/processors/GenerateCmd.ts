@@ -83,7 +83,6 @@ export class GenerateCmd extends BaseCmd {
 
     try {
       await fs.readdir(datasetName(this.opts.project, this.opts.name));
-      info(`Dataset name ${this.opts.name} exists and will be overwritten.`);
       return !!this.opts.force;
     } catch {
       return true;
@@ -168,21 +167,26 @@ export class GenerateCmd extends BaseCmd {
   }
 
   private generateChatConfigs(config: OaiConfig) {
-    return config.topics.map((t) => {
+    const chatCompletionParams: ChatCompletionCreateParams[] = [];
+    config.topics.forEach((t) => {
       const withVariables = this.interpolateTemplate(config.template, {
         ...config.variables,
-        count: config.count,
         topic: t,
       });
-      return {
-        model: config.model || DEFAULT_MODEL,
-        stream: false,
-        messages: [
-          { role: "system", content: config.system },
-          { role: "user", content: withVariables },
-        ],
-      } as ChatCompletionCreateParams;
+
+      for (let i = 0; i < config.count; i++) {
+        chatCompletionParams.push({
+          model: config.model || DEFAULT_MODEL,
+          stream: false,
+          messages: [
+            { role: "system", content: config.system },
+            { role: "user", content: withVariables },
+          ],
+        });
+      }
     });
+
+    return chatCompletionParams;
   }
 
   private interpolateTemplate(

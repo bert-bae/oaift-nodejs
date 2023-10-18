@@ -5,7 +5,7 @@ import { OaiConfig, OaiConfigSchema, getProjectConfig } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
-import { info, prettifyJson, warn } from "../utils/log";
+import { error, info, prettifyJson, warn } from "../utils/log";
 
 export type GenerateOptions = {
   project: string;
@@ -22,6 +22,7 @@ export class GenerateCmd {
     this.batchSize = 3;
     this.opts = opts;
     this.oai = oai;
+    this.completeChat = this.completeChat.bind(this);
   }
 
   public async process() {
@@ -30,12 +31,18 @@ export class GenerateCmd {
     const chatConfigs = this.generateChatConfigs(config);
     if (!this.opts.apply) {
       info(
-        "Apply flag with --apply has not been set. To apply the data generation, use the `--apply` option."
-      );
-      info(
+        "Apply flag with --apply has not been set. To apply the data generation, use the `--apply` option.\n",
         `Previewing data generation using model ${
           config.model || "gpt-3.5-turbo"
         } with the following templates:\n\n${prettifyJson(chatConfigs)}`
+      );
+      return;
+    }
+
+    const allowApply = await this.validateForceWrite();
+    if (!allowApply) {
+      error(
+        `Dataset name ${this.opts.name} exists and will be overwritten. If you want to proceed, apply the '--force' option.`
       );
       return;
     }
@@ -54,33 +61,47 @@ export class GenerateCmd {
     const requestId =
       this.opts.name || `${this.opts.project}-${new Date().getTime()}`;
     const reportPath = `./projects/${this.opts.project}/${requestId}`;
-    await fs.mkdir(reportPath);
-    await fs.writeFile(
-      `${reportPath}/chat_completions.json`,
-      prettifyJson(completions)
-    );
-    await this.generateReportFile(reportPath, completions);
-    await this.generateDataFile(reportPath, config, completions);
+    await fs.mkdir(reportPath, { recursive: true });
+    await Promise.all([
+      fs.writeFile(
+        `${reportPath}/chat_completions.json`,
+        prettifyJson(completions)
+      ),
+      this.generateReportFile(reportPath, completions),
+      this.generateDataFile(reportPath, config, completions),
+    ]);
   }
 
-  private async validateForceWrite() {
-    const dir = await fs.readdir(
-      `./projects/${this.opts.project}/${this.opts.name}`
-    );
+  private async validateForceWrite(): Promise<boolean> {
+    if (!this.opts.name) {
+      return true;
+    }
+
+    if (!this.opts.force) {
+      return false;
+    }
+
+    try {
+      await fs.readdir(`./projects/${this.opts.project}/${this.opts.name}`);
+      info(`Dataset name ${this.opts.name} exists and will be overwritten.`);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private async completeChat(
     messageConfig: ChatCompletionCreateParams,
     i: number
   ): Promise<ChatCompletion> {
-    info(`Generating chat completion #${i}...`);
-    const response = (await this.oai.chat.completions.create({
+    info(`Generating chat completion #${i + 1}...`);
+    const response: ChatCompletion = await this.oai.chat.completions.create({
       ...messageConfig,
       function_call: "auto",
       functions: oaiFn.definitions,
       temperature: 0.5,
       stream: false,
-    })) as ChatCompletion;
+    });
     return response;
   }
 

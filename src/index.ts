@@ -6,6 +6,7 @@ import { GenerateCmd, GenerateOptions } from "./processors/GenerateCmd";
 import fs from "fs/promises";
 import { FineTuneCmd } from "./processors/FineTuneCmd";
 import { JobsCmd } from "./processors/JobsCmd";
+import { getProjectConfig } from "./types/config";
 
 const validateProjectExists = async (project: string) => {
   try {
@@ -58,7 +59,8 @@ program
   )
   .action(async (opt: GenerateOptions) => {
     await validateProjectExists(opt.project);
-    const cmd = new GenerateCmd(opt, oai);
+    const config = await getProjectConfig(opt.project);
+    const cmd = new GenerateCmd(opt, { oai, config });
     await cmd.process();
   });
 
@@ -79,7 +81,8 @@ program
   )
   .action(async (opt) => {
     await validateProjectExists(opt.project);
-    const cmd = new FineTuneCmd(opt, oai);
+    const config = await getProjectConfig(opt.project);
+    const cmd = new FineTuneCmd(opt, { oai, config });
     await cmd.process();
   });
 

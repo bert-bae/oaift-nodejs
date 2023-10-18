@@ -1,13 +1,19 @@
 import fs from "fs";
 import path from "path";
 import fsPromise from "fs/promises";
-import OpenAI from "openai";
 import { getProjectConfig } from "../types/config";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { spawn } from "child_process";
 import { DEFAULT_MODEL } from "../constants/openai";
 import { info, log } from "console";
 import { prettifyJson } from "../utils/log";
+import { BaseCmd, BaseCmdParams } from "./BaseCmd";
+import {
+  TRAINING_SET,
+  fineTuningNamespace,
+  fineTuningPreview,
+  fineTuningReport,
+} from "../constants/fileNames";
 
 export type FineTuneOptions = {
   project: string;
@@ -16,28 +22,29 @@ export type FineTuneOptions = {
   model?: ChatCompletionCreateParams["model"];
 };
 
-export class FineTuneCmd {
+export class FineTuneCmd extends BaseCmd {
   private opts: FineTuneOptions;
-  private oai: OpenAI;
-  constructor(opts: FineTuneOptions, oai: OpenAI) {
+  constructor(opts: FineTuneOptions, base: BaseCmdParams) {
+    super(base.config, base.oai);
     this.opts = opts;
-    this.oai = oai;
   }
 
   public async process() {
-    const projectJobPath = `./projects/${this.opts.project}/${this.opts.dataset}`;
-    const data = await this.previewJobReport(
-      `${projectJobPath}/training_set.jsonl`
-    );
+    const trainingSet = `${fineTuningNamespace(
+      this.opts.project,
+      this.opts.dataset
+    )}/${TRAINING_SET}`;
+    const data = await this.previewJobReport(trainingSet);
     info("-----Preview-----");
     info(data);
-    await fsPromise.writeFile(`${projectJobPath}/fine_tune_preview.txt`, data);
+    await fsPromise.writeFile(
+      fineTuningPreview(this.opts.project, this.opts.dataset),
+      data
+    );
     if (this.opts.apply) {
-      const data = await this.createFineTuneJob(
-        `${projectJobPath}/training_set.jsonl`
-      );
+      const data = await this.createFineTuneJob(trainingSet);
       await fsPromise.writeFile(
-        `${projectJobPath}/fine_tuning_${data.job.id}.json`,
+        fineTuningReport(this.opts.project, this.opts.dataset, data.job.id),
         prettifyJson(data)
       );
     }

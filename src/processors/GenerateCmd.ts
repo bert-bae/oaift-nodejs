@@ -1,11 +1,17 @@
 import fs from "fs/promises";
 import { chunk } from "lodash";
-import OpenAI from "openai";
-import { OaiConfig, OaiConfigSchema, getProjectConfig } from "../types/config";
+import { OaiConfig, OaiConfigSchema } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
 import { error, info, prettifyJson, warn } from "../utils/log";
+import { BaseCmd, BaseCmdParams } from "./BaseCmd";
+import {
+  CHAT_COMPLETIONS,
+  GENERATION_REPORT,
+  TRAINING_SET,
+  datasetName,
+} from "../constants/fileNames";
 
 export type GenerateOptions = {
   project: string;
@@ -14,20 +20,18 @@ export type GenerateOptions = {
   apply?: boolean;
 };
 
-export class GenerateCmd {
+export class GenerateCmd extends BaseCmd {
   private batchSize: number;
   private opts: GenerateOptions;
-  private oai: OpenAI;
-  constructor(opts: GenerateOptions, oai: OpenAI) {
+  constructor(opts: GenerateOptions, base: BaseCmdParams) {
+    super(base.config, base.oai);
     this.batchSize = 3;
     this.opts = opts;
-    this.oai = oai;
     this.completeChat = this.completeChat.bind(this);
   }
 
   public async process() {
-    const json = await getProjectConfig(this.opts.project);
-    const config = OaiConfigSchema.parse(json);
+    const config = OaiConfigSchema.parse(this.config);
     const chatConfigs = this.generateChatConfigs(config);
     if (!this.opts.apply) {
       info(
@@ -60,14 +64,14 @@ export class GenerateCmd {
 
     const requestId =
       this.opts.name || `${this.opts.project}-${new Date().getTime()}`;
-    const reportPath = `./projects/${this.opts.project}/${requestId}`;
+    const reportPath = datasetName(this.opts.project, requestId);
     await fs.mkdir(reportPath, { recursive: true });
     await Promise.all([
       fs.writeFile(
-        `${reportPath}/chat_completions.json`,
+        `${reportPath}/${CHAT_COMPLETIONS}`,
         prettifyJson(completions)
       ),
-      this.generateReportFile(reportPath, completions),
+      this.generateReport(reportPath, completions),
       this.generateDataFile(reportPath, config, completions),
     ]);
   }
@@ -77,16 +81,12 @@ export class GenerateCmd {
       return true;
     }
 
-    if (!this.opts.force) {
-      return false;
-    }
-
     try {
-      await fs.readdir(`./projects/${this.opts.project}/${this.opts.name}`);
+      await fs.readdir(datasetName(this.opts.project, this.opts.name));
       info(`Dataset name ${this.opts.name} exists and will be overwritten.`);
-      return true;
+      return !!this.opts.force;
     } catch {
-      return false;
+      return true;
     }
   }
 
@@ -130,11 +130,11 @@ export class GenerateCmd {
       }
     });
 
-    await fs.writeFile(`${reportName}/training_set.jsonl`, modified);
-    info(`Training data set written to ${reportName}/training_set.jsonl`);
+    await fs.writeFile(`${reportName}/${TRAINING_SET}`, modified);
+    info(`Training data set written to ${reportName}/${TRAINING_SET}`);
   }
 
-  private async generateReportFile(
+  private async generateReport(
     reportName: string,
     completions: ChatCompletion[]
   ) {
@@ -155,9 +155,15 @@ export class GenerateCmd {
       }
     });
 
-    await fs.writeFile(`${reportName}/token_report.json`, prettifyJson(report));
+    await fs.writeFile(
+      `${reportName}/${GENERATION_REPORT}`,
+      prettifyJson({
+        tokens: report,
+        oaiConfig: this.config,
+      })
+    );
     info(
-      `Data generation usage report written to ${reportName}/token_report.json`
+      `Data generation usage report written to ${reportName}/${GENERATION_REPORT}`
     );
   }
 

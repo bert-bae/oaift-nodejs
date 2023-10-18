@@ -138,7 +138,7 @@ _Output_
 Each time test data is generated, it will create 3 files under the project request (project name + timestamp):
 
 - `chat_completions.json`: Contains the result of the chat completion API calls.
-- `token_report.json`: Contains the count of all tokens as a result of your training data generation. This can be used to estimate your cost for your project.
+- `generated_report.json`: Contains the count of all tokens as a result of your training data generation and a copy of the `oaift.config.json` that was used to generate your training data. This can be used to estimate your cost for your project and see what prompts may have been used to generate your data.
 - `training_set.jsonl`: OpenAI requires your training dataset to be in a `.jsonl` format. With the `chat_completions.json` data, this tool will try to determine if the built-in function call `convertToTrainingData` can be called. If the chat completion detects `convertToTrainingData`, then the tool will parse this data and automatically convert it into the `training_set.jsonl` for you. Otherwise, you'll need to inspect the `chat_completions.json` file and manually parse this data to meaningful training data.
 
 ```sh

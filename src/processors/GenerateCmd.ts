@@ -49,9 +49,7 @@ export class GenerateCmd {
       console.info(
         `Processing data generation batch ${counter} / ${batches.length}`
       );
-      const output = await Promise.all(
-        batch.map((config) => this.completeChat(config))
-      );
+      const output = await Promise.all(batch.map(this.completeChat));
       completions.push(...output);
       counter += 1;
     }
@@ -68,13 +66,15 @@ export class GenerateCmd {
   }
 
   private async completeChat(
-    messageConfig: ChatCompletionCreateParams
+    messageConfig: ChatCompletionCreateParams,
+    i: number
   ): Promise<ChatCompletion> {
+    console.info(`Generating chat completion #${i}...`);
     const response = (await this.oai.chat.completions.create({
       ...messageConfig,
       function_call: "auto",
       functions: oaiFn.definitions,
-      temperature: 0,
+      temperature: 0.5,
       stream: false,
     })) as ChatCompletion;
     return response;

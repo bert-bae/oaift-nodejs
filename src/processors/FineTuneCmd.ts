@@ -15,11 +15,9 @@ export type FineTuneOptions = {
 };
 
 export class FineTuneCmd {
-  private batchSize: number;
   private opts: FineTuneOptions;
   private oai: OpenAI;
   constructor(opts: FineTuneOptions, oai: OpenAI) {
-    this.batchSize = 3;
     this.opts = opts;
     this.oai = oai;
   }
@@ -52,7 +50,7 @@ export class FineTuneCmd {
     });
 
     console.info(
-      `Startiing fine tuning job with training file ID: ${trainingFile.id}`
+      `Starting fine tuning job with training file ID: ${trainingFile.id}`
     );
     const job = await this.oai.fineTuning.jobs.create({
       model: config.model || DEFAULT_MODEL,

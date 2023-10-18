@@ -7,9 +7,11 @@ import sys
 from collections import defaultdict
 
 # Load the dataset
-with open(sys.argv[1], 'r', encoding='utf-8') as f:
-    dataset = [json.loads(line) for line in f]
-
+try:
+    with open(sys.argv[1], 'r', encoding='utf-8') as f:
+        dataset = [json.loads(line) for line in f]
+except Exception as error:
+    print(error)
 # Initial dataset stats
 print("Num examples:", len(dataset))
 print("First example:")

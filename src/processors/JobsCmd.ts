@@ -24,7 +24,7 @@ export class JobsCmd {
   }
 
   public async events(opts: JobEventsOptions) {
-    const events = await this.oai.fineTunes.listEvents(opts.id);
+    const events = await this.oai.fineTuning.jobs.listEvents(opts.id);
     events.data.forEach((event, i) => {
       log(`----${i + 1}----`);
       info(`Level: ${event.level} | CreatedAt: ${event.created_at}`);
@@ -34,24 +34,23 @@ export class JobsCmd {
   }
 
   private async listOne(id: string) {
-    const job = await this.oai.fineTunes.retrieve(id);
+    const job = await this.oai.fineTuning.jobs.retrieve(id);
     info(
       `ID: ${job.id} | Model: ${job.model} | FineTunedModel: ${job.fine_tuned_model}`
     );
 
-    const trainingFileIds = job.training_files.map((file) => file.id);
-    info(`Status: ${job.status} | TrainingFiles: ${trainingFileIds}`);
+    info(`Status: ${job.status} | TrainingFiles: ${job.training_file}`);
   }
 
   private async listAll() {
-    const jobList = await this.oai.fineTunes.list();
+    const jobList = await this.oai.fineTuning.jobs.list();
     jobList.data.forEach((job, i) => {
       log(`----${i + 1}----`);
       info(
         `ID: ${job.id} | Model: ${job.model} | FineTunedModel: ${job.fine_tuned_model}`
       );
 
-      const trainingFileIds = job.training_files.map((file) => file.id);
+      const trainingFileIds = job.training_file;
       info(`Status: ${job.status} | TrainingFiles: ${trainingFileIds}`);
     });
   }

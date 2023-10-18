@@ -5,10 +5,14 @@
     "Providing support for deadlines.",
     "Celebrating success with everyone on the team."
   ],
-  "count": 1,
+  "count": 3,
   "variables": {
     "audience": "user"
   },
   "model": "gpt-3.5-turbo",
-  "template": "Generate {{count}} examples of conversations between you and the {{audience}} about the topic below and call convertToTrainingData({ conversation: MESSAGES[] }).\n\n{{topic}}"
+  "template": "Generate {{count}} examples of conversations between you and the {{audience}} about the topic below and call convertToTrainingData({ conversation: MESSAGES[] }).\n\n{{topic}}",
+  "fineTuning": {
+    "epochs": 2,
+    "suffix": ""
+  }
 }

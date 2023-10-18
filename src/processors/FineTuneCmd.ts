@@ -36,14 +36,13 @@ export class FineTuneCmd extends BaseCmd {
     const datasets = this.opts.datasets.split(",");
     await this.prepareFolders();
     const path = await this.consolidateDatasets(datasets);
-    console.log(path);
     await this.previewJobReport(path);
 
     if (this.opts.apply) {
       const trainingFile = await this.uploadTrainingFile(path);
       const job = await this.createFineTuneJob(trainingFile.id);
       await fsPromise.writeFile(
-        fineTuningReport(this.opts.project, this.opts.name, job.id),
+        fineTuningReport(this.opts.project, this.opts.name),
         prettifyJson({
           trainingFile,
           job,

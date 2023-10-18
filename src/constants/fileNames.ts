@@ -17,10 +17,6 @@ export const fineTuningDataset = (project: string, namespace: string) => {
   return `${fineTuningNamespace(project, namespace)}/training_set.jsonl`;
 };
 
-export const fineTuningReport = (
-  project: string,
-  namespace: string,
-  jobId: string
-) => {
-  return `${fineTuningNamespace(project, namespace)}/ft_${jobId}.json`;
+export const fineTuningReport = (project: string, namespace: string) => {
+  return `${fineTuningNamespace(project, namespace)}/ft_job.json`;
 };

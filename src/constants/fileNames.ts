@@ -18,5 +18,5 @@ export const fineTuningReport = (
 };
 
 export const fineTuningPreview = (project: string, namespace: string) => {
-  return `${fineTuningNamespace(project, namespace)}/ft_preview.json`;
+  return `${fineTuningNamespace(project, namespace)}/ft_preview.txt`;
 };

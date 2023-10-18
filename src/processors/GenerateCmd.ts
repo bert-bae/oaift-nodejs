@@ -120,7 +120,7 @@ export class GenerateCmd extends BaseCmd {
         const fnRes = fnCall(fnArgs) as any[];
         fnRes.unshift({ role: "system", content: config.system });
         modified +=
-          prettifyJson({
+          JSON.stringify({
             messages: fnRes,
           }) + "\n";
       } else {

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { info, log, prettifyJson } from "../utils/log";
 
 export type JobListOptions = {
   id: string;
@@ -25,33 +26,33 @@ export class JobsCmd {
   public async events(opts: JobEventsOptions) {
     const events = await this.oai.fineTunes.listEvents(opts.id);
     events.data.forEach((event, i) => {
-      console.log(`----${i + 1}----`);
-      console.info(`Level: ${event.level} | CreatedAt: ${event.created_at}`);
-      console.info(`Message: ${event.message}`);
-      console.info(`Details: ${JSON.stringify(event.object, null, 2)}`);
+      log(`----${i + 1}----`);
+      info(`Level: ${event.level} | CreatedAt: ${event.created_at}`);
+      info(`Message: ${event.message}`);
+      info(`Details: ${prettifyJson(event.object as any)}`);
     });
   }
 
   private async listOne(id: string) {
     const job = await this.oai.fineTunes.retrieve(id);
-    console.info(
+    info(
       `ID: ${job.id} | Model: ${job.model} | FineTunedModel: ${job.fine_tuned_model}`
     );
 
     const trainingFileIds = job.training_files.map((file) => file.id);
-    console.info(`Status: ${job.status} | TrainingFiles: ${trainingFileIds}`);
+    info(`Status: ${job.status} | TrainingFiles: ${trainingFileIds}`);
   }
 
   private async listAll() {
     const jobList = await this.oai.fineTunes.list();
     jobList.data.forEach((job, i) => {
-      console.log(`----${i + 1}----`);
-      console.info(
+      log(`----${i + 1}----`);
+      info(
         `ID: ${job.id} | Model: ${job.model} | FineTunedModel: ${job.fine_tuned_model}`
       );
 
       const trainingFileIds = job.training_files.map((file) => file.id);
-      console.info(`Status: ${job.status} | TrainingFiles: ${trainingFileIds}`);
+      info(`Status: ${job.status} | TrainingFiles: ${trainingFileIds}`);
     });
   }
 }

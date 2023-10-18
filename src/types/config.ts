@@ -1,3 +1,4 @@
+import fs from "fs/promises";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { z } from "zod";
 
@@ -18,3 +19,11 @@ export const OaiConfigSchema = z.object({
   template: z.string(),
   model: z.string(),
 });
+
+export const getProjectConfig = async (project: string): Promise<OaiConfig> => {
+  const config = await fs.readFile(
+    `./projects/${project}/oaift.config.json`,
+    "utf-8"
+  );
+  return JSON.parse(config) as OaiConfig;
+};

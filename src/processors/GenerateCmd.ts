@@ -1,13 +1,15 @@
 import fs from "fs/promises";
 import { chunk } from "lodash";
 import OpenAI from "openai";
-import { OaiConfig, OaiConfigSchema } from "../types/config";
+import { OaiConfig, OaiConfigSchema, getProjectConfig } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
 
 export type GenerateOptions = {
   project: string;
+  name?: string;
+  force?: boolean;
   apply?: boolean;
 };
 
@@ -22,7 +24,7 @@ export class GenerateCmd {
   }
 
   public async process() {
-    const json = await this.getProjectConfig();
+    const json = await getProjectConfig(this.opts.project);
     const config = OaiConfigSchema.parse(json);
     const chatConfigs = this.generateChatConfigs(config);
     if (!this.opts.apply) {
@@ -54,7 +56,8 @@ export class GenerateCmd {
       counter += 1;
     }
 
-    const requestId = `${this.opts.project}-${new Date().getTime()}`;
+    const requestId =
+      this.opts.name || `${this.opts.project}-${new Date().getTime()}`;
     const reportPath = `./projects/${this.opts.project}/${requestId}`;
     await fs.mkdir(reportPath);
     await fs.writeFile(
@@ -63,6 +66,12 @@ export class GenerateCmd {
     );
     await this.generateReportFile(reportPath, completions);
     await this.generateDataFile(reportPath, config, completions);
+  }
+
+  private async validateForceWrite() {
+    const dir = await fs.readdir(
+      `./projects/${this.opts.project}/${this.opts.name}`
+    );
   }
 
   private async completeChat(
@@ -172,13 +181,5 @@ export class GenerateCmd {
       );
     }
     return templateString;
-  }
-
-  private async getProjectConfig() {
-    const config = await fs.readFile(
-      `./projects/${this.opts.project}/oaift.config.json`,
-      "utf-8"
-    );
-    return JSON.parse(config) as OaiConfig;
   }
 }

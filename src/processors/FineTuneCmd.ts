@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import fsPromise from "fs/promises";
 import OpenAI from "openai";
-import { OaiConfig } from "../types/config";
+import { OaiConfig, getProjectConfig } from "../types/config";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { spawn } from "child_process";
 import { DEFAULT_MODEL } from "../constants/openai";
@@ -42,7 +42,7 @@ export class FineTuneCmd {
   }
 
   public async createFineTuneJob(trainingFilePath: string) {
-    const config = await this.getProjectConfig();
+    const config = await getProjectConfig(this.opts.project);
     console.info(`Uploading fine tuning training file: ${trainingFilePath}`);
     const trainingFile = await this.oai.files.create({
       file: fs.createReadStream(trainingFilePath),
@@ -82,13 +82,5 @@ export class FineTuneCmd {
         reject(err);
       });
     });
-  }
-
-  private async getProjectConfig() {
-    const config = await fsPromise.readFile(
-      `./projects/${this.opts.project}/oaift.config.json`,
-      "utf-8"
-    );
-    return JSON.parse(config) as OaiConfig;
   }
 }

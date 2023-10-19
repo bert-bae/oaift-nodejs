@@ -3,10 +3,10 @@ import path from "path";
 import fsPromise from "fs/promises";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { spawn } from "child_process";
-import { DEFAULT_MODEL } from "../constants/openai";
+import { DEFAULT_MODEL } from "../../constants/openai";
 import { info, log } from "console";
-import { prettifyJson } from "../utils/log";
-import { BaseCmd, BaseCmdParams } from "./BaseCmd";
+import { prettifyJson } from "../../utils/log";
+import { BaseCmd, BaseCmdParams } from "../BaseCmd";
 import {
   TRAINING_SET,
   fineTuningNamespace,
@@ -14,9 +14,9 @@ import {
   datasetName,
   fineTuningDataset,
   fineTuningReport,
-} from "../constants/fileNames";
+} from "../../constants/fileNames";
 
-export type FineTuneOptions = {
+export type CreateFineTuneOptions = {
   project: string;
   name: string;
   datasets: string;
@@ -24,9 +24,9 @@ export type FineTuneOptions = {
   model?: ChatCompletionCreateParams["model"];
 };
 
-export class FineTuneCmd extends BaseCmd {
-  private opts: FineTuneOptions;
-  constructor(opts: FineTuneOptions, base: BaseCmdParams) {
+export class CreateFineTuneCmd extends BaseCmd {
+  private opts: CreateFineTuneOptions;
+  constructor(opts: CreateFineTuneOptions, base: BaseCmdParams) {
     super(base.config, base.oai);
     this.opts = opts;
   }
@@ -39,7 +39,7 @@ export class FineTuneCmd extends BaseCmd {
 
     if (this.opts.apply) {
       const trainingFile = await this.uploadTrainingFile(path);
-      const job = await this.createFineTuneJob(trainingFile.id);
+      const job = await this.createCreateFineTuneJob(trainingFile.id);
       await fsPromise.writeFile(
         fineTuningReport(this.opts.project, this.opts.name),
         prettifyJson({
@@ -67,7 +67,7 @@ export class FineTuneCmd extends BaseCmd {
     );
   }
 
-  private async createFineTuneJob(trainingFileId: string) {
+  private async createCreateFineTuneJob(trainingFileId: string) {
     info(`Starting fine tuning job with training file ID: ${trainingFileId}`);
     const job = await this.oai.fineTuning.jobs.create({
       model: this.config.model || DEFAULT_MODEL,

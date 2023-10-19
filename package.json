@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc && cp -r ./scripts ./lib"
+    "build": "tsc && cp -r ./src/scripts ./lib"
   },
   "bin": {
     "oaift": "lib/index.js"

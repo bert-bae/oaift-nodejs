@@ -4,6 +4,7 @@ import { appendCommands as appendJobCommands } from "./commands/jobs";
 import { appendCommands as appendInitCommands } from "./commands/init";
 import { appendCommands as appendGenerateCommands } from "./commands/generate";
 import { appendCommands as appendFineTuneCommands } from "./commands/fineTune";
+import { appendCommands as appendTrainingFileCommands } from "./commands/trainingFiles";
 
 const program = new Command();
 program
@@ -14,6 +15,8 @@ program
 appendInitCommands(program);
 appendGenerateCommands(program);
 appendFineTuneCommands(program);
+appendFineTuneCommands(program);
+appendTrainingFileCommands(program);
 appendJobCommands(program);
 
 program.parse();

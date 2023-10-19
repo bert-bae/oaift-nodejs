@@ -17,7 +17,7 @@ export class DeleteFineTuneCmd {
   public async process() {
     if (!this.opts.apply) {
       info(
-        `This command will delete your fine tuned model with ID ${this.opts.id}. This action is not reversible. To continue, re-run this command with '--apply'.`
+        `This command will delete your fine tuned model with ID ${this.opts.id}.\n\nThis action is not reversible. To continue, re-run this command with '--apply'.`
       );
       return;
     }

@@ -5,9 +5,9 @@ import { validateProjectExists } from "../utils/project";
 import {
   CreateFineTuneCmd,
   CreateFineTuneOptions,
+  ListFineTuneCmd,
+  DeleteFineTuneCmd,
 } from "../processors/fineTune";
-import { ListFineTuneCmd } from "../processors/fineTune/ListFineTuneCmd";
-import { DeleteFineTuneCmd } from "../processors/fineTune/DeleteFineTuneCmd";
 
 export const appendCommands = (program: Command) => {
   const ftProgram = program

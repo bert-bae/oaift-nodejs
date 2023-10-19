@@ -33,6 +33,12 @@ export class JobsCmd {
     });
   }
 
+  public async cancel(opts: JobEventsOptions) {
+    info(`Cancelling job ${opts.id}....`);
+    await this.oai.fineTuning.jobs.cancel(opts.id);
+    info(`Job ${opts.id} cancelled successfully.`);
+  }
+
   private async listOne(id: string) {
     const job = await this.oai.fineTuning.jobs.retrieve(id);
     info(

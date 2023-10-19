@@ -90,16 +90,32 @@ program
     await cmd.process();
   });
 
-program
+const jobs = program
+  .command("jobs <command>")
+  .description(
+    "Command related to managing and viewing fine tuning jobs. Command can be `list`, `cancel`, or `events`"
+  );
+jobs
+  .command("cancel")
+  .description("Cancel an existing fine tuning job that has not completed yet.")
+  .option("--id <id>")
+  .action(async (opts) => {
+    const cmd = new JobsCmd(oai);
+    await cmd.cancel(opts);
+  });
+
+jobs
   .command("list")
-  .description("Lists all current fine tuning jobs")
+  .description(
+    "List fine tuning jobs. If `--id` is provided, it will only list that job's details. Otherwise, it will list everything."
+  )
   .option("--id <id>")
   .action(async (opts) => {
     const cmd = new JobsCmd(oai);
     await cmd.list(opts);
   });
 
-program
+jobs
   .command("events")
   .description("Lists all events associated to a fine tuning job ID")
   .requiredOption("--id <id>")

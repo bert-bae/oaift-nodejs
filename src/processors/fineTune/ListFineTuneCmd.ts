@@ -8,12 +8,11 @@ export class ListFineTuneCmd {
   }
 
   public async process() {
-    const models = await this.oai.fineTunes.list();
+    const models = await this.oai.models.list();
     models.data.forEach((m) => {
-      info(
-        `ID: ${m.id} | Model: ${m.model} | FineTunedModel: ${m.fine_tuned_model}`
-      );
-      info(`Status: ${m.status} | TrainingFiles: ${m.training_files}`);
+      if (m.owned_by.startsWith("user-")) {
+        info(`ID: ${m.id} | Created: ${m.created} | OwnedBy: ${m.owned_by}`);
+      }
     });
   }
 }

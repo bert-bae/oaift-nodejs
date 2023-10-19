@@ -46,6 +46,10 @@ export const appendCommands = (program: Command) => {
       "Delete an existing fine tuned model. This action cannot be reversed."
     )
     .requiredOption("--id <id>")
+    .option(
+      "--apply",
+      "Apply the delete. By default, deleting a fine tuned model will not proceed without this flag present as this action cannot be reversed."
+    )
     .action(async (opt) => {
       await new DeleteFineTuneCmd(opt, oai).process();
     });

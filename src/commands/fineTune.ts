@@ -6,10 +6,16 @@ import {
   CreateFineTuneCmd,
   CreateFineTuneOptions,
 } from "../processors/fineTune";
+import { ListFineTuneCmd } from "../processors/fineTune/ListFineTuneCmd";
+import { DeleteFineTuneCmd } from "../processors/fineTune/DeleteFineTuneCmd";
 
 export const appendCommands = (program: Command) => {
-  program
-    .command("fine-tune")
+  const ftProgram = program
+    .command("fine-tune <command>")
+    .description("Commands to manage your fine tuning jobs.");
+
+  ftProgram
+    .command("create")
     .description("Fine tune your model with a training data set.")
     .requiredOption(
       "--project <project>",
@@ -32,5 +38,24 @@ export const appendCommands = (program: Command) => {
       const config = await getProjectConfig(opt.project);
       const cmd = new CreateFineTuneCmd(opt, { oai, config });
       await cmd.process();
+    });
+
+  ftProgram
+    .command("delete")
+    .description(
+      "Delete an existing fine tuned model. This action cannot be reversed."
+    )
+    .requiredOption("--id <id>")
+    .action(async (opt) => {
+      await new DeleteFineTuneCmd(opt, oai).process();
+    });
+
+  ftProgram
+    .command("list")
+    .description(
+      "Lists existing fine tuned models. This does not include on-going fine tuning jobs. For that, please use the 'jobs' command."
+    )
+    .action(async () => {
+      await new ListFineTuneCmd(oai).process();
     });
 };

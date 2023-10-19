@@ -184,22 +184,18 @@ Options:
   -h, --help           display help for command
 ```
 
-#### List
+#### Jobs
 
 ```sh
-Lists all current fine tuning jobs
+Command related to managing and viewing fine tuning jobs. Command can be `list`, `cancel`, or `events`
 
 Options:
-  --id <id>
-  -h, --help  display help for command
-```
+  -h, --help        display help for command
 
-#### Events
-
-```sh
-Lists all events associated to a fine tuning job ID
-
-Options:
-  --id <id>
-  -h, --help  display help for command
+Commands:
+  cancel [options]  Cancel an existing fine tuning job that has not completed yet.
+  list [options]    List fine tuning jobs. If `--id` is provided, it will only list that job's details. Otherwise, it will list
+                    everything.
+  events [options]  Lists all events associated to a fine tuning job ID
+  help [command]    display help for command
 ```

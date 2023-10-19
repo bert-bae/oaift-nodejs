@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import fsPromise from "fs/promises";
-import { getProjectConfig } from "../types/config";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { spawn } from "child_process";
 import { DEFAULT_MODEL } from "../constants/openai";

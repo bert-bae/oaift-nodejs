@@ -1,5 +1,6 @@
 import fs from "fs/promises";
-import configTemplate from "../templates/oaift-template.config.json";
+import ftTemplate from "../templates/oaift-temp.config.json";
+import genTemplate from "../templates/oaigen-temp.config.json";
 import { prettifyJson } from "../utils/log";
 
 export type ProjectCmdOptions = {
@@ -38,8 +39,12 @@ export class ProjectCmd {
     }
 
     await fs.writeFile(
+      `${projectPath}/oaigen.config.json`,
+      prettifyJson(genTemplate)
+    );
+    await fs.writeFile(
       `${projectPath}/oaift.config.json`,
-      prettifyJson(configTemplate)
+      prettifyJson(ftTemplate)
     );
   }
 }

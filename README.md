@@ -128,7 +128,7 @@ Commands:
 
 Init is to support folder standardization with our fine tuning jobs. The project folder ensures that further usage of the CLI has the necessary folders to know where to save reports, chat completion data, and training sets.
 
-Once a project is initialized, you will find a `oaift.config.json` file in the project folder. This contains configurations that can be modified to support generating your training data set.
+Once a project is initialized, you will find a `oaift.config.json` and `oaigen.config.json` file in the project folder. This contains configurations that can be modified to configure fine tuning jobs and generating training data.
 
 ```sh
 Initialize a new fine-tuning project

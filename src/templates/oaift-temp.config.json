@@ -1,0 +1,5 @@
+{
+  "epochs": 3,
+  "suffix": "temp",
+  "baseModel": "gpt-3.5-turbo"
+}

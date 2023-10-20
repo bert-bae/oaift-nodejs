@@ -1,39 +1,46 @@
 import fs from "fs/promises";
-import { ChatCompletionCreateParams } from "openai/resources";
+import {
+  ChatCompletionCreateParams,
+  FineTuneCreateParams,
+} from "openai/resources";
 import { z } from "zod";
 
-type FineTuningConfigs = {
-  epochs?: number;
-  suffix?: string;
-};
-
-export type OaiConfig = {
+export type OaiGenerateConfig = {
   system: string;
   topics: string[];
   variables: Record<string, string | number>;
   count: number;
   template: string;
   model: ChatCompletionCreateParams["model"];
-  fineTuning: FineTuningConfigs;
 };
 
-export const OaiConfigSchema = z.object({
+export type OaiFineTuneConfig = {
+  epochs?: "auto" | number;
+  suffix?: string;
+  baseModel: FineTuneCreateParams["model"] | string;
+};
+
+export const OaiGenerateConfigSchema = z.object({
   system: z.string(),
   topics: z.array(z.string()),
   variables: z.record(z.string(), z.string()),
   count: z.number(),
   template: z.string(),
   model: z.string(),
-  fineTuning: z.object({
-    epochs: z.optional(z.number()),
-    suffix: z.optional(z.string().min(4).max(18)),
-  }),
 });
 
-export const getProjectConfig = async (project: string): Promise<OaiConfig> => {
+export const OaiFineTuneConfigSchema = z.object({
+  epochs: z.optional(z.number().or(z.enum(["auto"]))),
+  suffix: z.optional(z.string().min(4).max(18)),
+  baseModel: z.string(),
+});
+
+export const getProjectConfig = async (
+  project: string
+): Promise<OaiGenerateConfig> => {
   const config = await fs.readFile(
     `./projects/${project}/oaift.config.json`,
     "utf-8"
   );
-  return JSON.parse(config) as OaiConfig;
+  return JSON.parse(config) as OaiGenerateConfig;
 };

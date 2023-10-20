@@ -1,9 +1,9 @@
 import { info } from "console";
-import { BaseCmdParams } from "../BaseCmd";
+import OpenAI from "openai";
 
 export class ListTrainingFilesCmd {
-  private oai: BaseCmdParams["oai"];
-  constructor(oai: BaseCmdParams["oai"]) {
+  private oai: OpenAI;
+  constructor(oai: OpenAI) {
     this.oai = oai;
   }
 

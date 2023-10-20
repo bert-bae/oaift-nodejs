@@ -1,5 +1,4 @@
 import { info } from "console";
-import { BaseCmdParams } from "../BaseCmd";
 import OpenAI from "openai";
 
 export type DeleteFineTuneOptions = {

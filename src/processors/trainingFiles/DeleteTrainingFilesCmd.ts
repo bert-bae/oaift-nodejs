@@ -1,5 +1,5 @@
 import { info } from "console";
-import { BaseCmdParams } from "../BaseCmd";
+import OpenAI from "openai";
 
 export type DeleteTrainingFilesOptions = {
   ids: string[];
@@ -8,8 +8,8 @@ export type DeleteTrainingFilesOptions = {
 
 export class DeleteTrainingFilesCmd {
   private opts: DeleteTrainingFilesOptions;
-  private oai: BaseCmdParams["oai"];
-  constructor(opts: DeleteTrainingFilesOptions, oai: BaseCmdParams["oai"]) {
+  private oai: OpenAI;
+  constructor(opts: DeleteTrainingFilesOptions, oai: OpenAI) {
     this.opts = opts;
     this.oai = oai;
   }

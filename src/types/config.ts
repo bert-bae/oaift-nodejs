@@ -35,11 +35,21 @@ export const OaiFineTuneConfigSchema = z.object({
   baseModel: z.string(),
 });
 
-export const getProjectConfig = async (
+export const getFineTuneConfig = async (
+  project: string
+): Promise<OaiFineTuneConfig> => {
+  const config = await fs.readFile(
+    `./projects/${project}/oaift.config.json`,
+    "utf-8"
+  );
+  return JSON.parse(config) as OaiFineTuneConfig;
+};
+
+export const getGenerateConfig = async (
   project: string
 ): Promise<OaiGenerateConfig> => {
   const config = await fs.readFile(
-    `./projects/${project}/oaift.config.json`,
+    `./projects/${project}/oaigen.config.json`,
     "utf-8"
   );
   return JSON.parse(config) as OaiGenerateConfig;

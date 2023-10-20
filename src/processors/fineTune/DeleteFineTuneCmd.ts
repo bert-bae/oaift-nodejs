@@ -1,5 +1,6 @@
 import { info } from "console";
 import { BaseCmdParams } from "../BaseCmd";
+import OpenAI from "openai";
 
 export type DeleteFineTuneOptions = {
   id: string;
@@ -7,9 +8,9 @@ export type DeleteFineTuneOptions = {
 };
 
 export class DeleteFineTuneCmd {
-  private oai: BaseCmdParams["oai"];
+  private oai: OpenAI;
   private opts: DeleteFineTuneOptions;
-  constructor(opts: DeleteFineTuneOptions, oai: BaseCmdParams["oai"]) {
+  constructor(opts: DeleteFineTuneOptions, oai: OpenAI) {
     this.opts = opts;
     this.oai = oai;
   }

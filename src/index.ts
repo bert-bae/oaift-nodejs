@@ -15,7 +15,6 @@ program
 appendInitCommands(program);
 appendGenerateCommands(program);
 appendFineTuneCommands(program);
-appendFineTuneCommands(program);
 appendTrainingFileCommands(program);
 appendJobCommands(program);
 

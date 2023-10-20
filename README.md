@@ -102,7 +102,7 @@ Example template to get function calls:
 Generate {{count}} examples of conversations between you and the {{audience}} about the topic below. The resulting conversation between the assistant and user should call convertToTrainingData({ conversation: { role: 'user' | 'assistant', content: string }[] }).\n\n{{topic}}
 ```
 
-(OpenAI Best Practices)[https://openai.com/blog/function-calling-and-other-api-updates]
+[OpenAI Best Practices](https://openai.com/blog/function-calling-and-other-api-updates)
 
 ## Usage
 

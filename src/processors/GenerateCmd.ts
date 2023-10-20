@@ -158,7 +158,7 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
       `${reportName}/${GENERATION_REPORT}`,
       prettifyJson({
         tokens: report,
-        oaiConfig: this.config,
+        config: this.config,
       })
     );
     info(

@@ -47,6 +47,7 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
       await fsPromise.writeFile(
         fineTuningReport(this.opts.project, this.opts.name),
         prettifyJson({
+          config: this.config,
           trainingFile,
           job,
           datasets: datasets,

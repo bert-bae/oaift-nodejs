@@ -2,6 +2,7 @@ import { Command } from "commander";
 import {
   ListTrainingFilesCmd,
   DeleteTrainingFilesCmd,
+  ReadTrainingFilesCmd,
 } from "../processors/trainingFiles";
 import { oai } from "../openaiClient";
 
@@ -28,5 +29,15 @@ export const appendCommands = (program: Command) => {
         { ids, apply: opts.apply },
         oai
       ).process();
+    });
+
+  filesProgram
+    .command("content")
+    .description(
+      "Reads the content of the training file and outputs it to the terminal"
+    )
+    .requiredOption("--id <id>")
+    .action(async (opts) => {
+      await new ReadTrainingFilesCmd(opts, oai).process();
     });
 };

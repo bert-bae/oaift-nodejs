@@ -10,9 +10,5 @@
     "audience": "user"
   },
   "model": "gpt-3.5-turbo",
-  "template": "Generate conversations between you and the {{audience}} about the topic below and call convertToTrainingData({ conversation: MESSAGES[] }).\n\n{{topic}}",
-  "fineTuning": {
-    "epochs": 2,
-    "suffix": ""
-  }
+  "template": "Generate conversations between you and the {{audience}} about the topic below and call convertToTrainingData({ conversation: MESSAGES[] }).\n\n{{topic}}"
 }

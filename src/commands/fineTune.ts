@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { getProjectConfig } from "../types/config";
+import { getFineTuneConfig } from "../types/config";
 import { oai } from "../openaiClient";
 import { validateProjectExists } from "../utils/project";
 import {
@@ -35,7 +35,7 @@ export const appendCommands = (program: Command) => {
     )
     .action(async (opt: CreateFineTuneOptions) => {
       await validateProjectExists(opt.project);
-      const config = await getProjectConfig(opt.project);
+      const config = await getFineTuneConfig(opt.project);
       const cmd = new CreateFineTuneCmd(opt, { oai, config });
       await cmd.process();
     });

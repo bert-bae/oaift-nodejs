@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { GenerateCmd, GenerateOptions } from "../processors/GenerateCmd";
-import { getProjectConfig } from "../types/config";
+import { getGenerateConfig } from "../types/config";
 import { oai } from "../openaiClient";
 import { validateProjectExists } from "../utils/project";
 
@@ -28,7 +28,7 @@ export const appendCommands = (program: Command) => {
     )
     .action(async (opt: GenerateOptions) => {
       await validateProjectExists(opt.project);
-      const config = await getProjectConfig(opt.project);
+      const config = await getGenerateConfig(opt.project);
       const cmd = new GenerateCmd(opt, { oai, config });
       await cmd.process();
     });

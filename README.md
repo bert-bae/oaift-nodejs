@@ -128,7 +128,7 @@ Commands:
 
 Init is to support folder standardization with our fine tuning jobs. The project folder ensures that further usage of the CLI has the necessary folders to know where to save reports, chat completion data, and training sets.
 
-Once a project is initialized, you will find a `oaift.config.json` file in the project folder. This contains configurations that can be modified to support generating your training data set.
+Once a project is initialized, you will find a `oaift.config.json` and `oaigen.config.json` file in the project folder. This contains configurations that can be modified to configure fine tuning jobs and generating training data.
 
 ```sh
 Initialize a new fine-tuning project
@@ -175,13 +175,30 @@ By default, `--apply` will be false. This will output the preliminary informatio
 - This report is generated to `fine_tuning_${job.id}.json`. It will contain the job ID that can be used with the `list` and `events` commands.
 
 ```sh
-Fine tune your model with a training data set.
+Commands to manage your fine tuning jobs.
 
 Options:
-  --project <project>  The name of the project. This project must exist under `./projects/{name}/ with an `oaift.config.json` file.
-  --dataset <dataset>  Path to the training dataset file relative to the project folder. If the project path is './projects/example', the value for dataset is the name of the training dataset folder like 'test-1697567929095'
-  --apply              Apply the fine tuning job (there will be costs associated). To preview the fine tuning job's potential cost without running the training, call this command without the `--apply` flag.
-  -h, --help           display help for command
+  -h, --help        display help for command
+
+Commands:
+  create [options]  Fine tune your model with a training data set.
+  delete [options]  Delete an existing fine tuned model. This action cannot be reversed.
+  list              Lists existing fine tuned models. This does not include on-going fine tuning jobs. For that, please use the 'jobs' command.
+  help [command]    display help for command
+```
+
+#### Training Files
+
+```sh
+Commands to manage your training files.
+
+Options:
+  -h, --help        display help for command
+
+Commands:
+  list              List all training files uploaded to OpenAI.
+  delete [options]  Delete comma delimited list of training files by IDs.
+  help [command]    display help for command
 ```
 
 #### Jobs
@@ -194,8 +211,7 @@ Options:
 
 Commands:
   cancel [options]  Cancel an existing fine tuning job that has not completed yet.
-  list [options]    List fine tuning jobs. If `--id` is provided, it will only list that job's details. Otherwise, it will list
-                    everything.
+  list [options]    List fine tuning jobs. If `--id` is provided, it will only list that job's details. Otherwise, it will list everything.
   events [options]  Lists all events associated to a fine tuning job ID
   help [command]    display help for command
 ```

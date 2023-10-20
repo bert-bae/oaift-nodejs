@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import { chunk } from "lodash";
-import { OaiConfig, OaiConfigSchema } from "../types/config";
+import { OaiGenerateConfig, OaiGenerateConfigSchema } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
 import oaiFn from "../oaiFunctions";
 import { DEFAULT_MODEL } from "../constants/openai";
@@ -20,10 +20,10 @@ export type GenerateOptions = {
   apply?: boolean;
 };
 
-export class GenerateCmd extends BaseCmd {
+export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
   private batchSize: number;
   private opts: GenerateOptions;
-  constructor(opts: GenerateOptions, base: BaseCmdParams) {
+  constructor(opts: GenerateOptions, base: BaseCmdParams<OaiGenerateConfig>) {
     super(base.config, base.oai);
     this.batchSize = 3;
     this.opts = opts;
@@ -31,7 +31,7 @@ export class GenerateCmd extends BaseCmd {
   }
 
   public async process() {
-    const config = OaiConfigSchema.parse(this.config);
+    const config = OaiGenerateConfigSchema.parse(this.config);
     const chatConfigs = this.generateChatConfigs(config);
     if (!this.opts.apply) {
       info(
@@ -106,7 +106,7 @@ export class GenerateCmd extends BaseCmd {
 
   private async generateDataFile(
     reportName: string,
-    config: OaiConfig,
+    config: OaiGenerateConfig,
     completions: ChatCompletion[]
   ) {
     let modified: string = "";
@@ -158,7 +158,7 @@ export class GenerateCmd extends BaseCmd {
       `${reportName}/${GENERATION_REPORT}`,
       prettifyJson({
         tokens: report,
-        oaiConfig: this.config,
+        config: this.config,
       })
     );
     info(
@@ -166,7 +166,7 @@ export class GenerateCmd extends BaseCmd {
     );
   }
 
-  private generateChatConfigs(config: OaiConfig) {
+  private generateChatConfigs(config: OaiGenerateConfig) {
     const chatCompletionParams: ChatCompletionCreateParams[] = [];
     config.topics.forEach((t) => {
       const withVariables = this.interpolateTemplate(config.template, {

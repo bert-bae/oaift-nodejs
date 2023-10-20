@@ -15,6 +15,7 @@ import {
   fineTuningDataset,
   fineTuningReport,
 } from "../../constants/fileNames";
+import { OaiFineTuneConfig } from "../../types/config";
 
 export type CreateFineTuneOptions = {
   project: string;
@@ -24,9 +25,12 @@ export type CreateFineTuneOptions = {
   model?: ChatCompletionCreateParams["model"];
 };
 
-export class CreateFineTuneCmd extends BaseCmd {
+export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
   private opts: CreateFineTuneOptions;
-  constructor(opts: CreateFineTuneOptions, base: BaseCmdParams) {
+  constructor(
+    opts: CreateFineTuneOptions,
+    base: BaseCmdParams<OaiFineTuneConfig>
+  ) {
     super(base.config, base.oai);
     this.opts = opts;
   }
@@ -43,6 +47,7 @@ export class CreateFineTuneCmd extends BaseCmd {
       await fsPromise.writeFile(
         fineTuningReport(this.opts.project, this.opts.name),
         prettifyJson({
+          config: this.config,
           trainingFile,
           job,
           datasets: datasets,
@@ -70,12 +75,12 @@ export class CreateFineTuneCmd extends BaseCmd {
   private async createCreateFineTuneJob(trainingFileId: string) {
     info(`Starting fine tuning job with training file ID: ${trainingFileId}`);
     const job = await this.oai.fineTuning.jobs.create({
-      model: this.config.model || DEFAULT_MODEL,
+      model: this.config.baseModel || DEFAULT_MODEL,
       training_file: trainingFileId,
       hyperparameters: {
-        n_epochs: this.config.fineTuning.epochs || "auto",
+        n_epochs: this.config.epochs || "auto",
       },
-      suffix: this.config.fineTuning.suffix || this.opts.name,
+      suffix: this.config.suffix || this.opts.name,
     });
 
     return job;

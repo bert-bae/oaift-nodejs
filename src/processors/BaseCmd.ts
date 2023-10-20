@@ -1,15 +1,15 @@
 import OpenAI from "openai";
-import { OaiConfig } from "../types/config";
+import { OaiGenerateConfig, OaiFineTuneConfig } from "../types/config";
 
-export type BaseCmdParams = {
-  config: OaiConfig;
+export type BaseCmdParams<T> = {
+  config: T;
   oai: OpenAI;
 };
 
-export abstract class BaseCmd {
-  public config: OaiConfig;
+export abstract class BaseCmd<TConfig> {
+  public config: TConfig;
   public oai: OpenAI;
-  constructor(config: OaiConfig, oai: OpenAI) {
+  constructor(config: TConfig, oai: OpenAI) {
     this.config = config;
     this.oai = oai;
   }

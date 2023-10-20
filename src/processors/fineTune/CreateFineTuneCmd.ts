@@ -116,7 +116,7 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     return new Promise((resolve, reject) => {
       info("Initializing python script to preview training data...");
       const python = spawn("python3", [
-        path.resolve(__dirname, "../scripts/validate.py"),
+        path.resolve(__dirname, "../../scripts/validate.py"),
         datasetPath,
       ]);
 

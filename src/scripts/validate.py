@@ -12,6 +12,7 @@ try:
         dataset = [json.loads(line) for line in f]
 except Exception as error:
     print(error)
+    
 # Initial dataset stats
 print("Num examples:", len(dataset))
 print("First example:")

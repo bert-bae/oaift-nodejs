@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from "fs";
 import {
   ChatCompletionCreateParams,
   FineTuneCreateParams,
@@ -35,20 +35,16 @@ export const OaiFineTuneConfigSchema = z.object({
   baseModel: z.string(),
 });
 
-export const getFineTuneConfig = async (
-  project: string
-): Promise<OaiFineTuneConfig> => {
-  const config = await fs.readFile(
+export const getFineTuneConfig = (project: string): OaiFineTuneConfig => {
+  const config = fs.readFileSync(
     `./projects/${project}/oaift.config.json`,
     "utf-8"
   );
   return JSON.parse(config) as OaiFineTuneConfig;
 };
 
-export const getGenerateConfig = async (
-  project: string
-): Promise<OaiGenerateConfig> => {
-  const config = await fs.readFile(
+export const getGenerateConfig = (project: string): OaiGenerateConfig => {
+  const config = fs.readFileSync(
     `./projects/${project}/oaigen.config.json`,
     "utf-8"
   );

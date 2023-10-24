@@ -10,7 +10,7 @@ export const fineTuningNamespace = (project: string, namespace: string) => {
 };
 
 export const fineTuningPreview = (project: string, namespace: string) => {
-  return `${fineTuningNamespace(project, namespace)}/training_set_preview.txt`;
+  return `${fineTuningNamespace(project, namespace)}/training_set_preview.json`;
 };
 
 export const fineTuningDataset = (project: string, namespace: string) => {

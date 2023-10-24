@@ -16,6 +16,7 @@ import {
   fineTuningReport,
 } from "../../constants/fileNames";
 import { OaiFineTuneConfig } from "../../types/config";
+import { PreviewDataset } from "../../types/previewDataset";
 
 export type CreateFineTuneOptions = {
   project: string;
@@ -39,7 +40,10 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     const datasets = this.opts.datasets.split(",");
     await this.prepareFolders();
     const path = await this.consolidateDatasets(datasets);
-    await this.previewJobReport(path);
+    const { previewData, path: previewFilePath } = await this.previewJobReport(
+      path
+    );
+    this.validatePreviewResult(previewData, previewFilePath);
 
     if (this.opts.apply) {
       const trainingFile = await this.uploadTrainingFile(path);
@@ -106,9 +110,36 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     return path;
   }
 
-  // Runs the python code for OpenAI cookbook to preview specs on the fine tuning job
-  // TODO: Enhance with capturing the data as an object to auto-detect whether training can proceed or not.
-  private async previewJobReport(datasetPath: string): Promise<void> {
+  /**
+   * This method will throw an error if validation fails and stop the request.
+   * @param preview PreviewDataset from output of validate.py
+   * @param path Path where details of the preview are written for further inspection
+   * @returns Throws an error if validation fails.
+   */
+  private validatePreviewResult(preview: PreviewDataset, path: string) {
+    if (Object.keys(preview.format_errors).length) {
+      throw new Error(
+        `Dataset validation failed with format errors. Details can be found at ${path}`
+      );
+    }
+
+    if (
+      preview.n_missing_system ||
+      preview.n_missing_user ||
+      preview.n_too_long
+    ) {
+      throw new Error(
+        `Dataset validation failed with either missing system message, user message, or too many tokens. Details can be found at ${path}`
+      );
+    }
+
+    return true;
+  }
+
+  private async previewJobReport(datasetPath: string): Promise<{
+    previewData: PreviewDataset;
+    path: string;
+  }> {
     const previewFilePath = fineTuningPreview(
       this.opts.project,
       this.opts.name
@@ -121,20 +152,20 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
       ]);
 
       python.stdout.on("data", async function (res) {
-        info(`\nPreview ${datasetPath}\n\n`);
+        info(`Previewing dataset at ${datasetPath}`);
         const data = res.toString();
-        info(data);
-        await fsPromise.writeFile(previewFilePath, data.toString() as string);
-        resolve();
+        const parsed = JSON.parse(data);
+        await fsPromise.writeFile(previewFilePath, prettifyJson(parsed));
+        info(`Training dataset preview written to "${previewFilePath}"`);
+        resolve({
+          previewData: JSON.parse(data),
+          path: previewFilePath,
+        });
       });
 
       python.on("error", (err) => {
         log("Err: ", err);
         reject(err);
-      });
-
-      python.on("close", (code, signal) => {
-        log(`Process closed with ${code}: ${signal}`);
       });
 
       python.on("disconnect", () => {

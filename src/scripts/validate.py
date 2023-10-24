@@ -6,23 +6,18 @@ import numpy as np
 import sys
 from collections import defaultdict
 
+final_output = defaultdict()
+
 # Load the dataset
 try:
     with open(sys.argv[1], 'r', encoding='utf-8') as f:
         dataset = [json.loads(line) for line in f]
+        final_output['dataset_size'] = len(dataset)
 except Exception as error:
     print(error)
-    
-# Initial dataset stats
-print("Num examples:", len(dataset))
-print("First example:")
-for message in dataset[0]["messages"]:
-    print(message)
-
 
 # Format error checks
 format_errors = defaultdict(int)
-
 for ex in dataset:
     if not isinstance(ex, dict):
         format_errors["data_type"] += 1
@@ -52,12 +47,7 @@ for ex in dataset:
     if not any(message.get("role", None) == "assistant" for message in messages):
         format_errors["example_missing_assistant_message"] += 1
 
-if format_errors:
-    print("Found errors:")
-    for k, v in format_errors.items():
-        print(f"{k}: {v}")
-else:
-    print("No errors found")
+final_output['format_errors'] = format_errors
 
 encoding = tiktoken.get_encoding("cl100k_base")
 
@@ -81,11 +71,14 @@ def num_assistant_tokens_from_messages(messages):
             num_tokens += len(encoding.encode(message["content"]))
     return num_tokens
 
-def print_distribution(values, name):
-    print(f"\n#### Distribution of {name}:")
-    print(f"min / max: {min(values)}, {max(values)}")
-    print(f"mean / median: {np.mean(values)}, {np.median(values)}")
-    print(f"p5 / p95: {np.quantile(values, 0.1)}, {np.quantile(values, 0.9)}")
+def set_distribution(values, name):
+    final_output[name] = defaultdict()
+    final_output[name]['min'] = min(values)
+    final_output[name]['max'] = max(values)
+    final_output[name]['mean'] = np.mean(values)
+    final_output[name]['median'] = np.median(values)
+    final_output[name]['p5'] =np.quantile(values, 0.1)
+    final_output[name]['p95'] = np.quantile(values, 0.9)
 
 # Warnings and tokens counts
 n_missing_system = 0
@@ -104,13 +97,18 @@ for ex in dataset:
     convo_lens.append(num_tokens_from_messages(messages))
     assistant_message_lens.append(num_assistant_tokens_from_messages(messages))
     
-print("Num examples missing system message:", n_missing_system)
-print("Num examples missing user message:", n_missing_user)
-print_distribution(n_messages, "num_messages_per_example")
-print_distribution(convo_lens, "num_total_tokens_per_example")
-print_distribution(assistant_message_lens, "num_assistant_tokens_per_example")
+final_output["n_missing_system"] = n_missing_system
+final_output["n_missing_user"] = n_missing_user
+final_output["n_messages"] = n_messages
+final_output["convo_lens"] = convo_lens
+final_output["assistant_message_lens"] = assistant_message_lens
+
+set_distribution(n_messages, "num_messages_per_example")
+set_distribution(convo_lens, "num_total_tokens_per_example")
+set_distribution(assistant_message_lens, "num_assistant_tokens_per_example")
+
 n_too_long = sum(l > 4096 for l in convo_lens)
-print(f"\n{n_too_long} examples may be over the 4096 token limit, they will be truncated during fine-tuning")
+final_output["n_too_long"] = n_too_long
 
 # Pricing and default n_epochs estimate
 MAX_TOKENS_PER_EXAMPLE = 4096
@@ -129,6 +127,13 @@ elif n_train_examples * TARGET_EPOCHS > MAX_TARGET_EXAMPLES:
     n_epochs = max(MIN_DEFAULT_EPOCHS, MAX_TARGET_EXAMPLES // n_train_examples)
 
 n_billing_tokens_in_dataset = sum(min(MAX_TOKENS_PER_EXAMPLE, length) for length in convo_lens)
-print(f"Dataset has ~{n_billing_tokens_in_dataset} tokens that will be charged for during training")
-print(f"By default, you'll train for {n_epochs} epochs on this dataset")
-print(f"By default, you'll be charged for ~{n_epochs * n_billing_tokens_in_dataset} tokens")
+# print(f"Dataset has ~{n_billing_tokens_in_dataset} tokens that will be charged for during training")
+# print(f"By default, you'll train for {n_epochs} epochs on this dataset")
+# print(f"By default, you'll be charged for ~{n_epochs * n_billing_tokens_in_dataset} tokens")
+
+final_output["n_epochs"] = n_epochs
+final_output["n_train_examples"] = n_train_examples
+final_output["n_billing_tokens_in_dataset"] = n_billing_tokens_in_dataset
+
+print(json.dumps(final_output))
+sys.stdout.flush()

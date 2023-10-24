@@ -1,4 +1,5 @@
 import fs from "fs";
+import fsPromise from "fs/promises";
 import { chunk } from "lodash";
 import { OaiGenerateConfig, OaiGenerateConfigSchema } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
@@ -52,26 +53,33 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     }
 
     info("Applying generation tasks.");
-    const completions: ChatCompletion[] = [];
     const batches = chunk(chatConfigs, this.batchSize);
     let counter = 1;
-    for (const batch of batches) {
-      info(`Processing data generation batch ${counter} / ${batches.length}`);
-      const output = await Promise.all(batch.map(this.completeChat));
-      completions.push(...output);
-      counter += 1;
-    }
 
     const requestId =
       this.opts.name || `${this.opts.project}-${new Date().getTime()}`;
     const reportPath = datasetName(this.opts.project, requestId);
+    const chatCompletionPath = `${reportPath}/${CHAT_COMPLETIONS}`;
     fs.mkdirSync(reportPath, { recursive: true });
-    fs.writeFileSync(
-      `${reportPath}/${CHAT_COMPLETIONS}`,
-      prettifyJson(completions)
-    );
-    this.generateReport(reportPath, completions);
-    this.generateDataFile(reportPath, config, completions);
+    fs.writeFileSync(chatCompletionPath, "");
+    for (const batch of batches) {
+      info(`Processing data generation batch ${counter} / ${batches.length}`);
+      await Promise.all(
+        batch.map(async (data, i) => {
+          info(`Generating chat completion ${counter + i}...`);
+          const output = await this.completeChat(data);
+          await fsPromise.appendFile(
+            chatCompletionPath,
+            JSON.stringify(output) + "\n"
+          );
+          return output;
+        })
+      );
+      counter += 1;
+    }
+
+    this.generateReport(reportPath, chatCompletionPath);
+    this.generateDataFile(reportPath, config, chatCompletionPath);
   }
 
   private validateForceWrite(): boolean {
@@ -90,10 +98,8 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
   }
 
   private async completeChat(
-    messageConfig: ChatCompletionCreateParams,
-    i: number
+    messageConfig: ChatCompletionCreateParams
   ): Promise<ChatCompletion> {
-    info(`Generating chat completion #${i + 1}...`);
     const response: ChatCompletion = await this.oai.chat.completions.create({
       ...messageConfig,
       function_call: "auto",
@@ -107,10 +113,12 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
   private generateDataFile(
     reportName: string,
     config: OaiGenerateConfig,
-    completions: ChatCompletion[]
+    chatCompletionPath: string
   ) {
+    const chatCompletions =
+      this.parseChatCompletionsJsonList(chatCompletionPath);
     let modified: string = "";
-    completions.forEach((c) => {
+    chatCompletions.forEach((c) => {
       const message = c.choices[0].message;
       if (message.function_call) {
         const fnName = message.function_call.name;
@@ -133,16 +141,18 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     info(`Training data set written to ${reportName}/${TRAINING_SET}`);
   }
 
-  private generateReport(reportName: string, completions: ChatCompletion[]) {
+  private generateReport(reportName: string, chatCompletionPath: string) {
+    const chatCompletions =
+      this.parseChatCompletionsJsonList(chatCompletionPath);
     const report = {
       usage: {
         prompt_tokens: 0,
         completion_tokens: 0,
         total_tokens: 0,
       },
-      model: completions[0].model,
+      model: chatCompletions[0].model,
     };
-    completions.forEach((comp) => {
+    chatCompletions.forEach((comp) => {
       if (comp.usage) {
         const { prompt_tokens, completion_tokens, total_tokens } = comp.usage!;
         report.usage.prompt_tokens += prompt_tokens;
@@ -184,6 +194,14 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     });
 
     return chatCompletionParams;
+  }
+
+  private parseChatCompletionsJsonList(path: string) {
+    return fs
+      .readFileSync(path, "utf-8")
+      .split("\n")
+      .filter((set) => !!set)
+      .map((set) => JSON.parse(set) as ChatCompletion);
   }
 
   private interpolateTemplate(

@@ -1,5 +1,5 @@
 export const GENERATION_REPORT = "generated_report.json";
-export const CHAT_COMPLETIONS = "chat_completions.json";
+export const CHAT_COMPLETIONS = "chat_completions.jsonl";
 export const TRAINING_SET = "training_set.jsonl";
 export const datasetName = (project: string, name: string) => {
   return `./projects/${project}/datasets/${name}`;

@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from "fs";
 import ftTemplate from "../templates/oaift-temp.config.json";
 import genTemplate from "../templates/oaigen-temp.config.json";
 import { prettifyJson } from "../utils/log";
@@ -13,36 +13,32 @@ export class ProjectCmd {
     this.opts = opts;
   }
 
-  public async process() {
-    await this.setup();
+  public process() {
+    this.setup();
   }
 
-  private async setup() {
-    try {
-      await fs.readdir("./projects");
-    } catch {
-      await fs.mkdir("./projects");
+  private setup() {
+    if (!fs.existsSync("./projects")) {
+      fs.mkdirSync("./projects");
     }
 
     const projectPath = `./projects/${this.opts.name}`;
-    let projectFolder;
-    try {
-      projectFolder = await fs.readdir(projectPath);
-    } catch {
-      await fs.mkdir(projectPath);
+    if (!fs.existsSync(projectPath)) {
+      fs.mkdirSync(projectPath);
     }
 
-    if (projectFolder?.length > 0) {
+    let projectFolder = fs.readdirSync(projectPath);
+    if (projectFolder.length) {
       throw new Error(
         `Project folder is not empty. If you want to proceed, please choose a different project name or delete the existing directory: ${projectPath}`
       );
     }
 
-    await fs.writeFile(
+    fs.writeFileSync(
       `${projectPath}/oaigen.config.json`,
       prettifyJson(genTemplate)
     );
-    await fs.writeFile(
+    fs.writeFileSync(
       `${projectPath}/oaift.config.json`,
       prettifyJson(ftTemplate)
     );

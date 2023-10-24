@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import fsPromise from "fs/promises";
 import { ChatCompletionCreateParams } from "openai/resources";
 import { spawn } from "child_process";
 import { DEFAULT_MODEL } from "../../constants/openai";
@@ -38,8 +37,8 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
 
   public async process() {
     const datasets = this.opts.datasets.split(",");
-    await this.prepareFolders();
-    const path = await this.consolidateDatasets(datasets);
+    this.prepareFolders();
+    const path = this.consolidateDatasets(datasets);
     const { previewData, path: previewFilePath } = await this.previewJobReport(
       path
     );
@@ -48,7 +47,7 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     if (this.opts.apply) {
       const trainingFile = await this.uploadTrainingFile(path);
       const job = await this.createCreateFineTuneJob(trainingFile.id);
-      await fsPromise.writeFile(
+      fs.writeFileSync(
         fineTuningReport(this.opts.project, this.opts.name),
         prettifyJson({
           config: this.config,
@@ -60,7 +59,7 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     }
   }
 
-  private async prepareFolders() {
+  private prepareFolders() {
     const path = fineTuningNamespace(this.opts.project, this.opts.name);
     const exists = fs.existsSync(path);
     if (exists) {
@@ -68,12 +67,9 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     }
 
     // Prepare folders for following process
-    await fsPromise.mkdir(
-      fineTuningNamespace(this.opts.project, this.opts.name),
-      {
-        recursive: true,
-      }
-    );
+    fs.mkdirSync(fineTuningNamespace(this.opts.project, this.opts.name), {
+      recursive: true,
+    });
   }
 
   private async createCreateFineTuneJob(trainingFileId: string) {
@@ -98,15 +94,15 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
     });
   }
 
-  private async consolidateDatasets(datasets: string[]): Promise<string> {
+  private consolidateDatasets(datasets: string[]): string {
     let dataset = "";
     for (const set of datasets) {
       const path = `${datasetName(this.opts.project, set)}/${TRAINING_SET}`;
-      const content = await fsPromise.readFile(path, { encoding: "utf-8" });
+      const content = fs.readFileSync(path, { encoding: "utf-8" });
       dataset += content;
     }
     const path = fineTuningDataset(this.opts.project, this.opts.name);
-    await fsPromise.writeFile(path, dataset.trim());
+    fs.writeFileSync(path, dataset.trim());
     return path;
   }
 
@@ -155,7 +151,7 @@ export class CreateFineTuneCmd extends BaseCmd<OaiFineTuneConfig> {
         info(`Previewing dataset at ${datasetPath}`);
         const data = res.toString();
         const parsed = JSON.parse(data);
-        await fsPromise.writeFile(previewFilePath, prettifyJson(parsed));
+        fs.writeFileSync(previewFilePath, prettifyJson(parsed));
         info(`Training dataset preview written to "${previewFilePath}"`);
         resolve({
           previewData: JSON.parse(data),

@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from "fs";
 import { chunk } from "lodash";
 import { OaiGenerateConfig, OaiGenerateConfigSchema } from "../types/config";
 import { ChatCompletion, ChatCompletionCreateParams } from "openai/resources";
@@ -65,28 +65,28 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     const requestId =
       this.opts.name || `${this.opts.project}-${new Date().getTime()}`;
     const reportPath = datasetName(this.opts.project, requestId);
-    await fs.mkdir(reportPath, { recursive: true });
-    await Promise.all([
-      fs.writeFile(
-        `${reportPath}/${CHAT_COMPLETIONS}`,
-        prettifyJson(completions)
-      ),
-      this.generateReport(reportPath, completions),
-      this.generateDataFile(reportPath, config, completions),
-    ]);
+    fs.mkdirSync(reportPath, { recursive: true });
+    fs.writeFileSync(
+      `${reportPath}/${CHAT_COMPLETIONS}`,
+      prettifyJson(completions)
+    );
+    this.generateReport(reportPath, completions);
+    this.generateDataFile(reportPath, config, completions);
   }
 
-  private async validateForceWrite(): Promise<boolean> {
+  private validateForceWrite(): boolean {
     if (!this.opts.name) {
       return true;
     }
 
-    try {
-      await fs.readdir(datasetName(this.opts.project, this.opts.name));
+    const exists = fs.existsSync(
+      datasetName(this.opts.project, this.opts.name)
+    );
+    if (exists) {
       return !!this.opts.force;
-    } catch {
-      return true;
     }
+
+    return true;
   }
 
   private async completeChat(
@@ -104,7 +104,7 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     return response;
   }
 
-  private async generateDataFile(
+  private generateDataFile(
     reportName: string,
     config: OaiGenerateConfig,
     completions: ChatCompletion[]
@@ -129,14 +129,11 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
       }
     });
 
-    await fs.writeFile(`${reportName}/${TRAINING_SET}`, modified);
+    fs.writeFileSync(`${reportName}/${TRAINING_SET}`, modified);
     info(`Training data set written to ${reportName}/${TRAINING_SET}`);
   }
 
-  private async generateReport(
-    reportName: string,
-    completions: ChatCompletion[]
-  ) {
+  private generateReport(reportName: string, completions: ChatCompletion[]) {
     const report = {
       usage: {
         prompt_tokens: 0,
@@ -154,7 +151,7 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
       }
     });
 
-    await fs.writeFile(
+    fs.writeFileSync(
       `${reportName}/${GENERATION_REPORT}`,
       prettifyJson({
         tokens: report,

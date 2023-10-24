@@ -13,11 +13,11 @@ export class ProjectCmd {
     this.opts = opts;
   }
 
-  public async process() {
-    await this.setup();
+  public process() {
+    this.setup();
   }
 
-  private async setup() {
+  private setup() {
     if (!fs.existsSync("./projects")) {
       fs.mkdirSync("./projects");
     }

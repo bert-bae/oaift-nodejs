@@ -74,7 +74,7 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     this.generateDataFile(reportPath, config, completions);
   }
 
-  private async validateForceWrite(): Promise<boolean> {
+  private validateForceWrite(): boolean {
     if (!this.opts.name) {
       return true;
     }
@@ -104,7 +104,7 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     return response;
   }
 
-  private async generateDataFile(
+  private generateDataFile(
     reportName: string,
     config: OaiGenerateConfig,
     completions: ChatCompletion[]
@@ -133,10 +133,7 @@ export class GenerateCmd extends BaseCmd<OaiGenerateConfig> {
     info(`Training data set written to ${reportName}/${TRAINING_SET}`);
   }
 
-  private async generateReport(
-    reportName: string,
-    completions: ChatCompletion[]
-  ) {
+  private generateReport(reportName: string, completions: ChatCompletion[]) {
     const report = {
       usage: {
         prompt_tokens: 0,

@@ -6,8 +6,9 @@ This CLI contains minimal logic to support developers and OpenAI users generate 
 
 1. Save your `OPENAI_API_KEY` environment variable on your host machine. This tool does not save or store your secret keys.
 2. Install python3 alongside NodeJS
-3. Clone repository and after installing dependencies, run `npm i -g .`
-4. Run `oaift` to verify installation.
+3. Install python3 dependencies listed in `src/scripts/validate.py`
+4. Clone repository and after installing dependencies, run `npm i -g .`
+5. Run `oaift` to verify installation.
 
 This package has not been published as it is a work in process. It is also easier to clone and modify the code here for your own use cases.
 

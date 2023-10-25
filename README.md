@@ -18,6 +18,7 @@ This package has not been published as it is a work in process. It is also easie
 type FineTuningConfigs = {
   epochs?: number;
   suffix?: string;
+  baseModel?: string;
 };
 
 type OaiConfig = {
@@ -27,7 +28,6 @@ type OaiConfig = {
   count: number;
   template: string;
   model: ChatCompletionCreateParams["model"];
-  fineTuning: FineTuningConfigs;
 };
 ```
 

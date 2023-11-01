@@ -2,6 +2,8 @@
 
 This CLI contains minimal logic to support developers and OpenAI users generate training data and create / track fine-tuning jobs. It uses OpenAI's endpoints under the hood to ensure that changes can be maintained easily.
 
+Check out the repository (here)[https://github.com/bert-bae/oaift-nodejs]!
+
 ## Setup
 
 1. Save your `OPENAI_API_KEY` environment variable on your host machine. This tool does not save or store your secret keys.
